@@ -49,9 +49,10 @@ function ConfettiParticle({ particle }: { particle: Particle }) {
 
 type CelebrationProps = {
   word: WordItem;
+  coinsEarned?: number;
 };
 
-export default function Celebration({ word }: CelebrationProps) {
+export default function Celebration({ word, coinsEarned }: CelebrationProps) {
   const praise = useMemo(() => PRAISE[Math.floor(Math.random() * PRAISE.length)], []);
   const particles = useMemo(buildParticles, []);
   const scale = useSharedValue(0.6);
@@ -76,6 +77,7 @@ export default function Celebration({ word }: CelebrationProps) {
         <Image source={word.image} style={styles.image} contentFit="contain" />
         <Text style={styles.word}>{word.letters.join('')}</Text>
         <Text style={styles.praise}>{praise}</Text>
+        {coinsEarned ? <Text style={styles.coins}>+{coinsEarned} Coin</Text> : null}
       </Animated.View>
     </View>
   );
@@ -128,5 +130,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FF6F59',
+  },
+  coins: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#B98A00',
+    marginTop: 2,
   },
 });

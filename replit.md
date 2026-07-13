@@ -1,44 +1,34 @@
-# [Project name]
+# Kelime Bulmaca
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Bir Türkçe kelime/harf sürükle-bırak oyunu (Expo/React Native), 4-7 yaş arası çocuklar için dil gelişimi ve kelime dağarcığı hedefler.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/mobile run dev` — Expo dev server'ı çalıştırır (artifacts/mobile)
+- `pnpm --filter @workspace/mobile run typecheck` — mobil paket için tip kontrolü
+- `pnpm --filter @workspace/api-server run dev` — API sunucusu (şu an oyun tarafından kullanılmıyor, ayrı bir artifact)
+- `pnpm run typecheck` — tüm paketlerde tip kontrolü
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
-
-## Where things live
-
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
-
-## Architecture decisions
-
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Expo (React Native) + expo-router, TypeScript
+- react-native-gesture-handler + react-native-reanimated: harf sürükle-bırak ve animasyonlar
+- expo-audio: ses efektleri (doğru/yanlış/kutlama)
+- expo-image: silüet → renkli görsel açılma efekti (tintColor overlay tekniği)
+- @react-native-async-storage/async-storage: coin/seviye/ipucu ilerlemesinin cihazda kalıcı saklanması
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- **Oyna** sekmesi: hedef nesnenin silüeti + harf sayısı kadar yuvarlak boş yuva; altta karışık harfler (doğru harfler + 2 çeldirici); doğru harf yuvaya bırakılınca ses+haptik+animasyon; kelime tamamlanınca görsel renkleniyor, kutlama ekranı ve coin ödülü geliyor.
+- **Kitaplık** sekmesi: tamamlanan kelimeler renkli görsel+yazıyla, kilitli olanlar gri silüet+kilit ikonuyla gösteriliyor.
+- **Mağaza** sekmesi: coin karşılığı ipucu jetonu satın alma (tekli/5'li paket), ses efektleri aç/kapa anahtarı.
+- **Harita** sekmesi: 10 seviyelik yol haritası — tamamlanan (yeşil/tik), sıradaki (turuncu, numaralı), kilitli (gri/kilit) seviyeler; açık bir seviyeye dokununca Oyna sekmesine o seviyeyle geçiyor.
+- İlerleme (coin, açılan/tamamlanan seviyeler, ipucu jetonu sayısı, ses aç/kapa) `lib/gameState.tsx` içindeki tek bir Context + AsyncStorage ile kalıcı tutuluyor.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- `expo-audio` paketini pnpm workspace'e eklerken `npx expo install` (SDK'ya uygun versiyonu otomatik seçer) kullanıldı; ilk restart'ta Metro'nun native modül temp/maven klasörünü izlemeye çalışıp ENOENT ile patlaması geçiciydi — ikinci workflow restart'ında düzeldi.
+- Kelime listesindeki her kelimenin harfleri kendi içinde tekrarsız tutuluyor (aynı harften birden fazla yoksa ipucu/kilitleme mantığı harf değerine göre çalışabiliyor, index eşleştirmesine gerek kalmıyor).
 
 ## Pointers
 

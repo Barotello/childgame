@@ -44,6 +44,26 @@ const words: WordItem[] = [
     letters: ['F', 'İ', 'L'],
     image: require('../assets/images/word-fil.png'),
   },
+  {
+    id: 'ayi',
+    letters: ['A', 'Y', 'I'],
+    image: require('../assets/images/word-ayi.png'),
+  },
+  {
+    id: 'inek',
+    letters: ['İ', 'N', 'E', 'K'],
+    image: require('../assets/images/word-inek.png'),
+  },
+  {
+    id: 'ordek',
+    letters: ['Ö', 'R', 'D', 'E', 'K'],
+    image: require('../assets/images/word-ordek.png'),
+  },
+  {
+    id: 'tavuk',
+    letters: ['T', 'A', 'V', 'U', 'K'],
+    image: require('../assets/images/word-tavuk.png'),
+  },
 ];
 
 export default words;

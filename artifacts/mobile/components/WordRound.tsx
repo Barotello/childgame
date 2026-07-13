@@ -5,15 +5,33 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import LetterTile, { DropResult, TILE_SIZE } from './LetterTile';
 import type { WordItem } from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
+import { playCorrectSound } from '@/lib/sounds';
 
 const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38C6B0'];
+const DISTRACTOR_POOL = ['A', 'E', 'İ', 'O', 'U', 'B', 'C', 'D', 'K', 'M', 'N', 'R', 'S', 'T', 'Y', 'Z'];
+const DISTRACTOR_COUNT = 2;
 
 type SlotMeasurement = { pageX: number; pageY: number; width: number; height: number };
 
 type ShuffledTile = { key: string; letter: string; color: string };
 
-function shuffleLetters(letters: string[]): ShuffledTile[] {
-  const arr = letters.map((letter, index) => ({
+function pickDistractors(letters: string[]): string[] {
+  const used = new Set(letters);
+  const pool = DISTRACTOR_POOL.filter((letter) => !used.has(letter));
+  const picked: string[] = [];
+  const poolCopy = [...pool];
+  while (picked.length < DISTRACTOR_COUNT && poolCopy.length > 0) {
+    const index = Math.floor(Math.random() * poolCopy.length);
+    picked.push(poolCopy.splice(index, 1)[0]);
+  }
+  return picked;
+}
+
+function buildTray(letters: string[]): ShuffledTile[] {
+  const distractors = pickDistractors(letters);
+  const allLetters = [...letters, ...distractors];
+
+  const arr = allLetters.map((letter, index) => ({
     key: `${letter}-${index}-${Math.random().toString(36).slice(2, 7)}`,
     letter,
     color: TILE_COLORS[index % TILE_COLORS.length],
@@ -24,31 +42,32 @@ function shuffleLetters(letters: string[]): ShuffledTile[] {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 
-  const isSameOrder = arr.every((tile, index) => tile.letter === letters[index]);
-  if (isSameOrder && arr.length > 1) {
-    [arr[0], arr[1]] = [arr[1], arr[0]];
-  }
-
   return arr;
 }
 
 type WordRoundProps = {
   word: WordItem;
+  hintRequest: number;
+  onHintApplied: () => void;
   onComplete: () => void;
 };
 
-export default function WordRound({ word, onComplete }: WordRoundProps) {
+export default function WordRound({ word, hintRequest, onHintApplied, onComplete }: WordRoundProps) {
   const colors = useColors();
   const letters = word.letters;
-  const tiles = useMemo(() => shuffleLetters(letters), [word.id]);
+  const tiles = useMemo(() => buildTray(letters), [word.id]);
 
   const [filled, setFilled] = useState<Array<string | null>>(() => letters.map(() => null));
   const filledRef = useRef<Array<string | null>>(filled);
   filledRef.current = filled;
 
+  const usedTileKeys = useRef<Set<string>>(new Set());
+  const [, forceRender] = useState(0);
+
   const slotRefs = useRef<Array<View | null>>([]);
   const slotMeasurements = useRef<SlotMeasurement[]>([]);
   const revealProgress = useSharedValue(0);
+  const hintRequestRef = useRef(hintRequest);
 
   const measureSlots = () => {
     letters.forEach((_, index) => {
@@ -73,6 +92,41 @@ export default function WordRound({ word, onComplete }: WordRoundProps) {
     measureSlots();
   };
 
+  const applyLetterAtIndex = (index: number, letter: string, tileKey?: string) => {
+    const next = [...filledRef.current];
+    next[index] = letter;
+    filledRef.current = next;
+    setFilled(next);
+    if (tileKey) usedTileKeys.current.add(tileKey);
+
+    const total = letters.length;
+    const doneCount = next.filter(Boolean).length;
+    revealProgress.value = withTiming(doneCount / total, { duration: 250 });
+
+    if (doneCount === total) {
+      setTimeout(() => onComplete(), 700);
+    }
+  };
+
+  useEffect(() => {
+    if (hintRequestRef.current === hintRequest) return;
+    hintRequestRef.current = hintRequest;
+
+    const emptyIndex = filledRef.current.findIndex((value) => value === null);
+    if (emptyIndex === -1) return;
+
+    const targetLetter = letters[emptyIndex];
+    const matchingTile = tiles.find(
+      (tile) => tile.letter === targetLetter && !usedTileKeys.current.has(tile.key),
+    );
+
+    applyLetterAtIndex(emptyIndex, targetLetter, matchingTile?.key);
+    playCorrectSound();
+    forceRender((n) => n + 1);
+    onHintApplied();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hintRequest]);
+
   const attemptDrop = (letter: string, centerX: number, centerY: number): DropResult => {
     const HIT_PADDING = 18;
 
@@ -89,18 +143,7 @@ export default function WordRound({ word, onComplete }: WordRoundProps) {
         return { correct: false, dx: 0, dy: 0 };
       }
 
-      const next = [...filledRef.current];
-      next[index] = letter;
-      filledRef.current = next;
-      setFilled(next);
-
-      const total = letters.length;
-      const doneCount = next.filter(Boolean).length;
-      revealProgress.value = withTiming(doneCount / total, { duration: 250 });
-
-      if (doneCount === total) {
-        setTimeout(() => onComplete(), 700);
-      }
+      applyLetterAtIndex(index, letter);
 
       const slotCenterX = box.pageX + box.width / 2;
       const slotCenterY = box.pageY + box.height / 2;
@@ -115,45 +158,59 @@ export default function WordRound({ word, onComplete }: WordRoundProps) {
   }));
 
   const imageWrapStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + revealProgress.value * 0.08 }],
+    transform: [{ scale: 1 + revealProgress.value * 0.06 }],
   }));
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.imageWrap, imageWrapStyle]}>
-        <Image source={word.image} style={styles.image} contentFit="contain" />
-        <Animated.View style={[styles.silhouetteOverlay, silhouetteStyle]}>
-          <Image source={word.image} style={styles.image} contentFit="contain" tintColor={colors.mutedForeground} />
-        </Animated.View>
-      </Animated.View>
+      <View style={[styles.screenCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.screenInner, { borderColor: colors.secondary, backgroundColor: colors.muted }]}>
+          <Animated.View style={[styles.imageWrap, imageWrapStyle]}>
+            <Image source={word.image} style={styles.image} contentFit="contain" />
+            <Animated.View style={[styles.silhouetteOverlay, silhouetteStyle]}>
+              <Image
+                source={word.image}
+                style={styles.image}
+                contentFit="contain"
+                tintColor={colors.mutedForeground}
+              />
+            </Animated.View>
+          </Animated.View>
+        </View>
 
-      <View style={styles.slotsRow} onLayout={handleSlotsLayout}>
-        {letters.map((letter, index) => {
-          const value = filled[index];
-          return (
-            <View
-              key={`slot-${index}`}
-              ref={(node) => {
-                slotRefs.current[index] = node;
-              }}
-              style={[
-                styles.slot,
-                {
-                  borderColor: value ? colors.success : colors.border,
-                  backgroundColor: value ? '#E4FBEE' : colors.card,
-                },
-              ]}
-            >
-              {value ? <Text style={styles.slotLetter}>{value}</Text> : null}
-            </View>
-          );
-        })}
+        <View style={styles.slotsRow} onLayout={handleSlotsLayout}>
+          {letters.map((letter, index) => {
+            const value = filled[index];
+            return (
+              <View
+                key={`slot-${index}`}
+                ref={(node) => {
+                  slotRefs.current[index] = node;
+                }}
+                style={[
+                  styles.slot,
+                  {
+                    borderColor: value ? colors.success : colors.border,
+                    backgroundColor: value ? '#E4FBEE' : colors.background,
+                  },
+                ]}
+              >
+                {value ? <Text style={styles.slotLetter}>{value}</Text> : null}
+              </View>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.tray}>
         {tiles.map((tile) => (
           <View key={tile.key} style={styles.trayItem}>
-            <LetterTile letter={tile.letter} color={tile.color} onAttemptDrop={attemptDrop} />
+            <LetterTile
+              letter={tile.letter}
+              color={tile.color}
+              locked={usedTileKeys.current.has(tile.key)}
+              onAttemptDrop={attemptDrop}
+            />
           </View>
         ))}
       </View>
@@ -168,10 +225,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
   },
+  screenCard: {
+    width: '100%',
+    borderRadius: 28,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    marginTop: 4,
+  },
+  screenInner: {
+    width: '100%',
+    height: 190,
+    borderRadius: 18,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
   imageWrap: {
-    width: 200,
-    height: 200,
-    marginTop: 8,
+    width: 160,
+    height: 160,
   },
   image: {
     width: '100%',
@@ -188,18 +266,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 10,
-    marginTop: 4,
+    marginTop: 16,
   },
   slot: {
     width: TILE_SIZE,
     height: TILE_SIZE,
-    borderRadius: 16,
+    borderRadius: TILE_SIZE / 2,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   slotLetter: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     color: '#1F8A55',
   },
@@ -207,7 +285,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    paddingBottom: 24,
+    paddingBottom: 16,
+    paddingTop: 20,
     gap: 10,
   },
   trayItem: {

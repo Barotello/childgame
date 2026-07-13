@@ -12,6 +12,11 @@ let correctPlayer: AudioPlayer | null = null;
 let wrongPlayer: AudioPlayer | null = null;
 let celebratePlayer: AudioPlayer | null = null;
 let audioModeReady = false;
+let muted = false;
+
+export function setSoundsMuted(value: boolean) {
+  muted = value;
+}
 
 async function ensureAudioMode() {
   if (audioModeReady) return;
@@ -43,6 +48,7 @@ function getPlayer(kind: 'correct' | 'wrong' | 'celebrate'): AudioPlayer {
 }
 
 function playSound(kind: 'correct' | 'wrong' | 'celebrate') {
+  if (muted) return;
   ensureAudioMode().finally(() => {
     try {
       const player = getPlayer(kind);
