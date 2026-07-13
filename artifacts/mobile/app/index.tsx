@@ -7,6 +7,7 @@ import WordRound from '@/components/WordRound';
 import Celebration from '@/components/Celebration';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
+import { playCelebrateSound } from '@/lib/sounds';
 
 function shuffleWords() {
   const arr = [...words];
@@ -32,6 +33,7 @@ export default function GameScreen() {
   const handleComplete = () => {
     setScore((s) => s + 1);
     setCelebrating(true);
+    playCelebrateSound();
     setTimeout(() => {
       setCelebrating(false);
       setRoundIndex((i) => i + 1);

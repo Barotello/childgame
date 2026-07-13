@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ysSRUDYQLceZpjl2JK30-"
+uri = "file://artifacts/mobile/assets/sounds/wrong.mp3"
+type = "audio"
+title = "gentle mismatch boop"
+
+[[outputs]]
+id = "-ONsTCM9JWRZFwiSuTG4Y"
+uri = "file://artifacts/mobile/assets/sounds/celebrate.mp3"
+type = "audio"
+title = "celebration fanfare"

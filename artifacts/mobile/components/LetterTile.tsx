@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 
 export const TILE_SIZE = 56;
 
@@ -53,12 +54,14 @@ export default function LetterTile({ letter, color, onAttemptDrop }: LetterTileP
         translateX.value = withSpring(translateX.value + result.dx, { damping: 12 });
         translateY.value = withSpring(translateY.value + result.dy, { damping: 12 });
         scale.value = withSequence(withTiming(1.3, { duration: 120 }), withSpring(1, { damping: 8 }));
+        playCorrectSound();
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       } else {
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
+        playWrongSound();
         if (Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
