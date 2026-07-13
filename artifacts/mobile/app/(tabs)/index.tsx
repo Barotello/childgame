@@ -16,8 +16,16 @@ const COINS_PER_LEVEL = 15;
 export default function PlayScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { currentLevel, totalLevels, muted, hintTokens, toggleMute, consumeHintToken, completeLevel } =
-    useGameState();
+  const {
+    currentLevel,
+    totalLevels,
+    muted,
+    hintTokens,
+    toggleMute,
+    consumeHintToken,
+    completeLevel,
+    setCurrentLevel,
+  } = useGameState();
 
   const [celebrating, setCelebrating] = useState(false);
   const [hintRequest, setHintRequest] = useState(0);
@@ -31,6 +39,9 @@ export default function PlayScreen() {
     playCelebrateSound();
     setTimeout(() => {
       setCelebrating(false);
+      if (currentLevel < totalLevels - 1) {
+        setCurrentLevel(currentLevel + 1);
+      }
     }, 1500);
   };
 
