@@ -32,6 +32,7 @@ export default function PlayScreen() {
     setSelectedCategory,
   } = useGameState();
 
+  const { locale } = useI18n();
   const [celebrating, setCelebrating] = useState(false);
   const [hintRequest, setHintRequest] = useState(0);
 
@@ -66,7 +67,7 @@ export default function PlayScreen() {
   };
 
   const roundKey = hasCategoryWords && currentWord?.category === selectedCategory
-    ? `${currentWord.id}-${currentLevel}-${hintRequest}`
+    ? `${currentWord.id}-${currentLevel}-${locale}-${hintRequest}`
     : 'empty';
 
   return (

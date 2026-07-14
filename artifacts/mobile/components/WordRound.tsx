@@ -4,20 +4,31 @@ import { Image } from 'expo-image';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import LetterTile, { DropResult, TILE_SIZE } from './LetterTile';
 import type { WordItem } from '@/constants/words';
+import { type Locale } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
 import { playCorrectSound } from '@/lib/sounds';
+import { useI18n } from '@/lib/i18n';
 
 const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38C6B0'];
-const DISTRACTOR_POOL = ['A', 'E', 'İ', 'O', 'U', 'B', 'C', 'D', 'K', 'M', 'N', 'R', 'S', 'T', 'Y', 'Z'];
+
+const DISTRACTOR_POOLS: Record<Locale, string[]> = {
+  en: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+  tr: 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ'.split(''),
+  fr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÇÉÈÊËÎÏÔÖÙÛÜ'.split(''),
+  es: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑÜ'.split(''),
+  it: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÉÌÒÙ'.split(''),
+  de: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split(''),
+};
+
 const DISTRACTOR_COUNT = 2;
 
 type SlotMeasurement = { pageX: number; pageY: number; width: number; height: number };
 
 type ShuffledTile = { key: string; letter: string; color: string };
 
-function pickDistractors(letters: string[]): string[] {
+function pickDistractors(letters: string[], locale: Locale): string[] {
   const used = new Set(letters);
-  const pool = DISTRACTOR_POOL.filter((letter) => !used.has(letter));
+  const pool = DISTRACTOR_POOLS[locale].filter((letter) => !used.has(letter));
   const picked: string[] = [];
   const poolCopy = [...pool];
   while (picked.length < DISTRACTOR_COUNT && poolCopy.length > 0) {
@@ -27,8 +38,8 @@ function pickDistractors(letters: string[]): string[] {
   return picked;
 }
 
-function buildTray(letters: string[]): ShuffledTile[] {
-  const distractors = pickDistractors(letters);
+function buildTray(letters: string[], locale: Locale): ShuffledTile[] {
+  const distractors = pickDistractors(letters, locale);
   const allLetters = [...letters, ...distractors];
 
   const arr = allLetters.map((letter, index) => ({
@@ -54,8 +65,9 @@ type WordRoundProps = {
 
 export default function WordRound({ word, hintRequest, onHintApplied, onComplete }: WordRoundProps) {
   const colors = useColors();
-  const letters = word.letters;
-  const tiles = useMemo(() => buildTray(letters), [word.id]);
+  const { locale } = useI18n();
+  const letters = word.spellings[locale].toLocaleUpperCase(locale).split('');
+  const tiles = useMemo(() => buildTray(letters, locale), [word.id, locale]);
 
   const [filled, setFilled] = useState<Array<string | null>>(() => letters.map(() => null));
   const filledRef = useRef<Array<string | null>>(filled);
@@ -86,7 +98,7 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
     const timeout = setTimeout(measureSlots, 250);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [word.id]);
+  }, [word.id, locale]);
 
   const handleSlotsLayout = (_event: LayoutChangeEvent) => {
     measureSlots();

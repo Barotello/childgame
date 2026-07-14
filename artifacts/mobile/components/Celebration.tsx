@@ -58,6 +58,7 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
   const praise = useMemo(() => praiseList[Math.floor(Math.random() * praiseList.length)], [praiseList]);
   const particles = useMemo(buildParticles, []);
   const scale = useSharedValue(0.6);
+  const wordLabel = word.spellings[locale].toLocaleUpperCase(locale);
 
   useEffect(() => {
     scale.value = withSequence(withSpring(1.08, { damping: 8 }), withSpring(1, { damping: 10 }));
@@ -77,7 +78,7 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
       </View>
       <Animated.View style={[styles.card, cardStyle]}>
         <Image source={word.image} style={styles.image} contentFit="contain" />
-        <Text style={styles.word}>{word.letters.join('')}</Text>
+        <Text style={styles.word}>{wordLabel}</Text>
         <Text style={styles.praise}>{praise}</Text>
         {coinsEarned ? <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text> : null}
       </Animated.View>
