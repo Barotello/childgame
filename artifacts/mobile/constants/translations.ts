@@ -45,6 +45,11 @@ const tr = {
   purchasePackSuccess: '{n} ipucu satın alındı!',
   purchaseHintFail: 'Yetersiz coin',
   praise: ['Harika!', 'Süpersin!', 'Aferin!', 'Çok güzel!', 'Bravo!'],
+  categoryAnimals: 'Hayvanlar',
+  categoryFruits: 'Meyveler',
+  categoryNumbers: 'Sayılar',
+  categoryColors: 'Renkler',
+  categoryFlags: 'Bayraklar',
 };
 
 const en = {
@@ -73,6 +78,11 @@ const en = {
   purchasePackSuccess: '{n} hints purchased!',
   purchaseHintFail: 'Not enough coins',
   praise: ['Great!', 'Super!', 'Well done!', 'Very nice!', 'Bravo!'],
+  categoryAnimals: 'Animals',
+  categoryFruits: 'Fruits',
+  categoryNumbers: 'Numbers',
+  categoryColors: 'Colors',
+  categoryFlags: 'Flags',
 };
 
 const fr = {
@@ -101,6 +111,11 @@ const fr = {
   purchasePackSuccess: 'Pack de {n} indices acheté !',
   purchaseHintFail: 'Pas assez de pièces',
   praise: ['Super!', 'Génial!', 'Bien joué!', 'Très bien!', 'Bravo!'],
+  categoryAnimals: 'Animaux',
+  categoryFruits: 'Fruits',
+  categoryNumbers: 'Nombres',
+  categoryColors: 'Couleurs',
+  categoryFlags: 'Drapeaux',
 };
 
 const es = {
@@ -129,6 +144,11 @@ const es = {
   purchasePackSuccess: '¡Pack de {n} pistas comprado!',
   purchaseHintFail: 'Monedas insuficientes',
   praise: ['¡Genial!', '¡Súper!', '¡Muy bien!', '¡Excelente!', '¡Bravo!'],
+  categoryAnimals: 'Animales',
+  categoryFruits: 'Frutas',
+  categoryNumbers: 'Números',
+  categoryColors: 'Colores',
+  categoryFlags: 'Banderas',
 };
 
 const it = {
@@ -157,6 +177,11 @@ const it = {
   purchasePackSuccess: 'Pacchetto {n} suggerimenti acquistato!',
   purchaseHintFail: 'Monete insufficienti',
   praise: ['Grande!', 'Super!', 'Bravissimo!', 'Bellissimo!', 'Bravo!'],
+  categoryAnimals: 'Animali',
+  categoryFruits: 'Frutta',
+  categoryNumbers: 'Numeri',
+  categoryColors: 'Colori',
+  categoryFlags: 'Bandiere',
 };
 
 const de = {
@@ -185,6 +210,11 @@ const de = {
   purchasePackSuccess: '{n}-Hinweis-Pack gekauft!',
   purchaseHintFail: 'Nicht genug Münzen',
   praise: ['Super!', 'Toll!', 'Gut gemacht!', 'Sehr schön!', 'Bravo!'],
+  categoryAnimals: 'Tiere',
+  categoryFruits: 'Früchte',
+  categoryNumbers: 'Zahlen',
+  categoryColors: 'Farben',
+  categoryFlags: 'Flaggen',
 };
 
 export const translations = { en, fr, es, it, de, tr } as const;
