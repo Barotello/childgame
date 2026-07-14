@@ -63,7 +63,6 @@ export default function LibraryScreen() {
                   const gameIndex = item.wordId ? wordIndexById.get(item.wordId) : undefined;
                   const gated = gameIndex !== undefined;
                   const unlocked = !gated || completedLevels.includes(gameIndex as number);
-                  const label = item.names[locale];
                   const isFlags = category.id === 'flags';
 
                   return (
@@ -96,11 +95,6 @@ export default function LibraryScreen() {
                           </View>
                         ) : null}
                       </View>
-                      {!isFlags ? (
-                        <Text style={[styles.word, { color: unlocked ? colors.foreground : colors.mutedForeground }]}>
-                          {unlocked ? label : t('locked')}
-                        </Text>
-                      ) : null}
                     </View>
                   );
                 })}
@@ -188,11 +182,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 999,
     padding: 5,
-  },
-  word: {
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    textAlign: 'center',
   },
 });
