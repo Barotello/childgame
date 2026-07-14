@@ -20,13 +20,18 @@ type PersistedState = {
   selectedCategory: CategoryId;
 };
 
+const FIRST_ANIMAL_INDEX = Math.max(
+  0,
+  words.findIndex((w) => w.category === 'animals'),
+);
+
 const DEFAULT_STATE: PersistedState = {
   coins: 20,
   highestUnlocked: 0,
   completedLevels: [],
   hintTokens: 1,
   muted: false,
-  currentLevel: 0,
+  currentLevel: FIRST_ANIMAL_INDEX,
   selectedCategory: 'animals',
 };
 
@@ -58,6 +63,14 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         if (raw) {
           const parsed = JSON.parse(raw) as Partial<PersistedState>;
           const merged = { ...DEFAULT_STATE, ...parsed };
+          // Guard against stale saves where the persisted level and category
+          // don't correspond to the same word (e.g. saves from before
+          // categories existed) — snap to the first word of the category.
+          const currentWord = words[merged.currentLevel];
+          if (!currentWord || currentWord.category !== merged.selectedCategory) {
+            const fallback = words.findIndex((w) => w.category === merged.selectedCategory);
+            merged.currentLevel = fallback >= 0 ? fallback : FIRST_ANIMAL_INDEX;
+          }
           setState(merged);
           setSoundsMuted(merged.muted);
         }

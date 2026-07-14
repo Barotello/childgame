@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -22,10 +22,8 @@ export default function PlayScreen() {
   const {
     currentLevel,
     totalLevels,
-    muted,
     hintTokens,
     selectedCategory,
-    toggleMute,
     consumeHintToken,
     completeLevel,
     setCurrentLevel,
@@ -42,18 +40,33 @@ export default function PlayScreen() {
   const currentCategoryIndex = categoryWords.findIndex((w) => w.id === currentWord?.id);
   const hasCategoryWords = categoryWords.length > 0;
 
+  // Always reflect the latest level/category in a ref so the completion
+  // timeout below reads fresh values instead of a stale render closure —
+  // this is what previously caused the next word to sometimes not appear.
+  const latestRef = useRef({ currentLevel, selectedCategory });
+  latestRef.current = { currentLevel, selectedCategory };
+  const completingRef = useRef(false);
+
+  useEffect(() => {
+    completingRef.current = false;
+  }, [currentWord?.id, selectedCategory]);
+
   const handleComplete = () => {
-    completeLevel(currentLevel);
+    if (completingRef.current) return;
+    completingRef.current = true;
+
+    completeLevel(latestRef.current.currentLevel);
     setCelebrating(true);
     playCelebrateSound();
     setTimeout(() => {
       setCelebrating(false);
-      if (hasCategoryWords) {
-        const nextInCategory = categoryWords[currentCategoryIndex + 1];
-        if (nextInCategory) {
-          const nextIndex = words.findIndex((w) => w.id === nextInCategory.id);
-          setCurrentLevel(nextIndex);
-        }
+      const { currentLevel: level, selectedCategory: category } = latestRef.current;
+      const wordsInCategory = words.filter((w) => w.category === category);
+      const indexInCategory = wordsInCategory.findIndex((w) => w.id === words[level]?.id);
+      const nextInCategory = indexInCategory >= 0 ? wordsInCategory[indexInCategory + 1] : undefined;
+      if (nextInCategory) {
+        const nextIndex = words.findIndex((w) => w.id === nextInCategory.id);
+        setCurrentLevel(nextIndex);
       }
     }, 1500);
   };
@@ -78,12 +91,6 @@ export default function PlayScreen() {
       <GameHeader />
 
       <View style={styles.levelRow}>
-        <Switch
-          value={!muted}
-          onValueChange={toggleMute}
-          trackColor={{ false: colors.border, true: colors.success }}
-          thumbColor="#FFFFFF"
-        />
         <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
           <View
             style={[
