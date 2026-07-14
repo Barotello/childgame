@@ -36,7 +36,7 @@ export default function StoreScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
     >
       <GameHeader />
       <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('store')}</Text>

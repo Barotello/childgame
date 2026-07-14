@@ -18,7 +18,7 @@ export default function SettingsScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: 8 }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
     >
       <GameHeader />
       <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('settings')}</Text>

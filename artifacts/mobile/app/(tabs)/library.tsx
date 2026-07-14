@@ -19,7 +19,7 @@ export default function LibraryScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
     >
       <GameHeader />
       <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('learnedWords')}</Text>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 16,
     gap: 12,
-    paddingBottom: 24,
+    paddingBottom: 12,
   },
   card: {
     width: '46%',

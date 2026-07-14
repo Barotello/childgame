@@ -58,7 +58,7 @@ export default function PlayScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 8 }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
     >
       <GameHeader />
 
