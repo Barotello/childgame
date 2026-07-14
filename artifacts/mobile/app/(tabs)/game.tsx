@@ -3,6 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import WordRound from '@/components/WordRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
@@ -32,13 +34,30 @@ export default function PlayScreen() {
 
   const { locale } = useI18n();
   const [celebrating, setCelebrating] = useState(false);
-  const [hintRequest, setHintRequest] = useState(0);
+  const [categoryComplete, setCategoryComplete] = useState(false);
+
+  useEffect(() => {
+    setCategoryComplete(false);
+  }, [selectedCategory]);
 
   const currentWord = words[currentLevel];
 
   const categoryWords = words.filter((w) => w.category === selectedCategory);
   const currentCategoryIndex = categoryWords.findIndex((w) => w.id === currentWord?.id);
   const hasCategoryWords = categoryWords.length > 0;
+
+  const progressValue = useSharedValue(0);
+
+  useEffect(() => {
+    const target = hasCategoryWords
+      ? (currentCategoryIndex + 1) / categoryWords.length
+      : (currentLevel + 1) / totalLevels;
+    progressValue.value = withSpring(target, { damping: 14, stiffness: 90 });
+  }, [currentCategoryIndex, currentLevel, hasCategoryWords, categoryWords.length, totalLevels]);
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressValue.value * 100}%`,
+  }));
 
   // Always reflect the latest level/category in a ref so the completion
   // timeout below reads fresh values instead of a stale render closure —
@@ -67,40 +86,32 @@ export default function PlayScreen() {
       if (nextInCategory) {
         const nextIndex = words.findIndex((w) => w.id === nextInCategory.id);
         setCurrentLevel(nextIndex);
+      } else {
+        setCategoryComplete(true);
       }
-    }, 1500);
+    }, 1100);
   };
 
-  const handleHintPress = () => {
-    if (hintTokens <= 0) return;
-    const consumed = consumeHintToken();
-    if (consumed) {
-      setHintRequest((n) => n + 1);
-    }
-  };
+
 
   const roundKey = hasCategoryWords && currentWord?.category === selectedCategory
-    ? `${currentWord.id}-${currentLevel}-${locale}-${hintRequest}`
+    ? `${currentWord.id}-${currentLevel}-${locale}`
     : 'empty';
 
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 }]}
     >
-      <GameHeader />
+      <GameHeader onBack={() => router.navigate('/library')} />
 
       <View style={styles.levelRow}>
         <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
-          <View
+          <Animated.View
             style={[
               styles.progressFill,
-              {
-                backgroundColor: colors.primary,
-                width: hasCategoryWords
-                  ? `${((currentCategoryIndex + 1) / categoryWords.length) * 100}%`
-                  : `${((currentLevel + 1) / totalLevels) * 100}%`,
-              },
+              { backgroundColor: colors.primary },
+              progressStyle
             ]}
           />
           <Text style={[styles.progressLabel, { color: colors.foreground }]}>
@@ -111,39 +122,33 @@ export default function PlayScreen() {
         </View>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipRow}
-        style={styles.chipScroll}
-      >
-        {categories.map((cat) => {
-          const selected = cat.id === selectedCategory;
-          return (
-            <Pressable
-              key={cat.id}
-              onPress={() => setSelectedCategory(cat.id)}
-              style={[
-                styles.chip,
-                { backgroundColor: colors.card, borderColor: colors.border },
-                selected && { backgroundColor: colors.primary, borderColor: colors.primary },
-              ]}
-            >
-              <Feather name={cat.icon as any} size={15} color={selected ? '#FFFFFF' : colors.secondary} />
-              <Text style={[styles.chipLabel, { color: selected ? '#FFFFFF' : colors.foreground }]}>
-                {t(cat.titleKey)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
 
-      {hasCategoryWords && currentWord?.category === selectedCategory ? (
+
+      {categoryComplete ? (
+        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Feather name="award" size={56} color="#FFC93C" />
+          <Text style={[styles.emptyTitle, { color: colors.foreground, textAlign: 'center', fontSize: 22 }]}>
+            Tebrikler!
+          </Text>
+          <Text style={[styles.emptyBody, { color: colors.mutedForeground, marginTop: 4, marginBottom: 20 }]}>
+            Bu kategorideki tüm kelimeleri tamamladın! Harikasın!
+          </Text>
+          <Pressable 
+             style={[styles.hintButton, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 14 }]}
+             onPress={() => {
+                const first = words.findIndex(w => w.category === selectedCategory);
+                if (first >= 0) setCurrentLevel(first);
+                setCategoryComplete(false);
+             }}
+          >
+            <Feather name="rotate-ccw" size={18} color="#FFFFFF" />
+            <Text style={[styles.hintText, { color: '#FFFFFF' }]}>Tekrar Oyna</Text>
+          </Pressable>
+        </View>
+      ) : hasCategoryWords && currentWord?.category === selectedCategory ? (
         <WordRound
           key={roundKey}
           word={currentWord}
-          hintRequest={hintRequest}
-          onHintApplied={() => {}}
           onComplete={handleComplete}
         />
       ) : (
@@ -157,17 +162,6 @@ export default function PlayScreen() {
           </Text>
         </View>
       )}
-
-      <Pressable
-        onPress={handleHintPress}
-        disabled={hintTokens <= 0}
-        style={[styles.hintButton, { opacity: hintTokens <= 0 ? 0.4 : 1 }]}
-      >
-        <Feather name="help-circle" size={18} color={colors.secondary} />
-        <Text style={[styles.hintText, { color: colors.secondary }]}>
-          {t('hint')} ({hintTokens})
-        </Text>
-      </Pressable>
 
       {celebrating ? <Celebration word={currentWord} coinsEarned={COINS_PER_LEVEL} /> : null}
     </LinearGradient>
@@ -204,27 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  chipScroll: {
-    flexGrow: 0,
-    marginBottom: 14,
-  },
-  chipRow: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
+
   emptyCard: {
     flex: 1,
     marginHorizontal: 20,

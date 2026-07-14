@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,13 +14,13 @@ export default function StoreScreen() {
   const { t } = useI18n();
   const { coins, hintTokens, hintCost, hintPackCost, hintPackSize, buyHint, buyHintPack } = useGameState();
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const notify = (message: string) => {
-    if (Platform.OS === 'web') {
-      // Alert.alert has no visible UI on web; fall back silently since the
-      // coin/token counters already update immediately.
-      return;
-    }
-    Alert.alert(message);
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === message ? null : prev));
+    }, 3000);
   };
 
   const handleBuyHint = () => {
@@ -76,6 +76,13 @@ export default function StoreScreen() {
           </Pressable>
         </View>
       </View>
+
+      {toastMessage ? (
+        <View style={[styles.toast, { bottom: insets.bottom + 90, backgroundColor: colors.foreground }]}>
+          <Feather name="info" size={18} color={colors.background} />
+          <Text style={[styles.toastText, { color: colors.background }]}>{toastMessage}</Text>
+        </View>
+      ) : null}
     </LinearGradient>
   );
 }
@@ -136,5 +143,24 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 13,
     fontWeight: '800',
+  },
+  toast: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  toastText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

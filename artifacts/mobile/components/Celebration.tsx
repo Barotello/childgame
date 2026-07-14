@@ -61,7 +61,7 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
   const wordLabel = word.spellings[locale].toLocaleUpperCase(locale);
 
   useEffect(() => {
-    scale.value = withSequence(withSpring(1.08, { damping: 8 }), withSpring(1, { damping: 10 }));
+    scale.value = withSpring(1, { damping: 12, stiffness: 100 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -77,7 +77,13 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
         ))}
       </View>
       <Animated.View style={[styles.card, cardStyle]}>
-        <Image source={word.image} style={styles.image} contentFit="contain" />
+        {word.emoji ? (
+          <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
+        ) : word.swatch ? (
+          <View style={{ width: 140, height: 140, borderRadius: 70, backgroundColor: word.swatch, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 }} />
+        ) : (
+          <Image source={word.image} style={styles.image} contentFit="contain" />
+        )}
         <Text style={styles.word}>{wordLabel}</Text>
         <Text style={styles.praise}>{praise}</Text>
         {coinsEarned ? <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text> : null}
@@ -108,10 +114,12 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    paddingVertical: 24,
-    paddingHorizontal: 32,
+    borderRadius: 32,
+    width: 280,
+    aspectRatio: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
     gap: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },

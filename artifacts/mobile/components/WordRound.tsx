@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, Text, View, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import LetterTile, { DropResult, TILE_SIZE } from './LetterTile';
+import LetterTile, { DropResult } from './LetterTile';
 import type { WordItem } from '@/constants/words';
 import { type Locale } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
 import { playCorrectSound } from '@/lib/sounds';
 import { useI18n } from '@/lib/i18n';
+import { useGameState } from '@/lib/gameState';
+import { Feather } from '@expo/vector-icons';
 
 const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38C6B0'];
 
@@ -58,16 +60,23 @@ function buildTray(letters: string[], locale: Locale): ShuffledTile[] {
 
 type WordRoundProps = {
   word: WordItem;
-  hintRequest: number;
-  onHintApplied: () => void;
   onComplete: () => void;
 };
 
-export default function WordRound({ word, hintRequest, onHintApplied, onComplete }: WordRoundProps) {
+const { width: WINDOW_WIDTH } = Dimensions.get('window');
+
+export default function WordRound({ word, onComplete }: WordRoundProps) {
+  const { hintTokens, consumeHintToken, skipTokens, consumeSkipToken } = useGameState();
   const colors = useColors();
   const { locale } = useI18n();
   const letters = word.spellings[locale].toLocaleUpperCase(locale).split('');
   const tiles = useMemo(() => buildTray(letters, locale), [word.id, locale]);
+
+  const maxGap = 6;
+  const padding = 40;
+  const rawSize = Math.floor((WINDOW_WIDTH - padding - maxGap * Math.max(0, letters.length - 1)) / letters.length);
+  const dynamicTileSize = Math.min(56, Math.max(26, rawSize));
+  const dynamicGap = Math.min(10, Math.floor((WINDOW_WIDTH - padding - letters.length * dynamicTileSize) / Math.max(1, letters.length - 1)));
 
   const [filled, setFilled] = useState<Array<string | null>>(() => letters.map(() => null));
   const filledRef = useRef<Array<string | null>>(filled);
@@ -79,7 +88,13 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
   const slotRefs = useRef<Array<View | null>>([]);
   const slotMeasurements = useRef<SlotMeasurement[]>([]);
   const revealProgress = useSharedValue(0);
-  const hintRequestRef = useRef(hintRequest);
+  const completionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (completionTimeout.current) clearTimeout(completionTimeout.current);
+    };
+  }, []);
 
   const measureSlots = () => {
     letters.forEach((_, index) => {
@@ -116,16 +131,18 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
     revealProgress.value = withTiming(doneCount / total, { duration: 250 });
 
     if (doneCount === total) {
-      setTimeout(() => onComplete(), 700);
+      if (completionTimeout.current) clearTimeout(completionTimeout.current);
+      completionTimeout.current = setTimeout(() => onComplete(), 700);
     }
   };
 
-  useEffect(() => {
-    if (hintRequestRef.current === hintRequest) return;
-    hintRequestRef.current = hintRequest;
-
+  const handleHintPress = () => {
+    if (hintTokens <= 0) return;
     const emptyIndex = filledRef.current.findIndex((value) => value === null);
     if (emptyIndex === -1) return;
+    
+    const consumed = consumeHintToken();
+    if (!consumed) return;
 
     const targetLetter = letters[emptyIndex];
     const matchingTile = tiles.find(
@@ -135,9 +152,23 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
     applyLetterAtIndex(emptyIndex, targetLetter, matchingTile?.key);
     playCorrectSound();
     forceRender((n) => n + 1);
-    onHintApplied();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hintRequest]);
+  };
+
+  const handleSkipPress = () => {
+    if (skipTokens <= 0) return;
+    const consumed = consumeSkipToken();
+    if (!consumed) return;
+    
+    // Automatically fill everything and finish
+    const allFilled = letters.slice();
+    filledRef.current = allFilled;
+    setFilled(allFilled);
+    revealProgress.value = withTiming(1, { duration: 250 });
+    
+    playCorrectSound();
+    if (completionTimeout.current) clearTimeout(completionTimeout.current);
+    completionTimeout.current = setTimeout(() => onComplete(), 500);
+  };
 
   const attemptDrop = (letter: string, centerX: number, centerY: number): DropResult => {
     const HIT_PADDING = 18;
@@ -173,24 +204,38 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
     transform: [{ scale: 1 + revealProgress.value * 0.06 }],
   }));
 
+  const emojiStyle = useAnimatedStyle(() => ({
+    opacity: 0.2 + 0.8 * revealProgress.value,
+  }));
+
   return (
     <View style={styles.container}>
       <View style={[styles.screenCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={[styles.screenInner, { borderColor: colors.secondary, backgroundColor: colors.muted }]}>
           <Animated.View style={[styles.imageWrap, imageWrapStyle]}>
-            <Image source={word.image} style={styles.image} contentFit="contain" />
-            <Animated.View style={[styles.silhouetteOverlay, silhouetteStyle]}>
-              <Image
-                source={word.image}
-                style={styles.image}
-                contentFit="contain"
-                tintColor={colors.mutedForeground}
-              />
-            </Animated.View>
+            {word.emoji ? (
+              <Animated.Text style={[{ fontSize: 90, textAlign: 'center', lineHeight: 160 }, emojiStyle]}>
+                {word.emoji}
+              </Animated.Text>
+            ) : word.swatch ? (
+              <Animated.View style={{ width: 140, height: 140, borderRadius: 70, backgroundColor: word.swatch, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 }} />
+            ) : (
+              <>
+                <Image source={word.image} style={styles.image} contentFit="contain" />
+                <Animated.View style={[styles.silhouetteOverlay, silhouetteStyle]}>
+                  <Image
+                    source={word.image}
+                    style={styles.image}
+                    contentFit="contain"
+                    tintColor={colors.mutedForeground}
+                  />
+                </Animated.View>
+              </>
+            )}
           </Animated.View>
         </View>
 
-        <View style={styles.slotsRow} onLayout={handleSlotsLayout}>
+        <View style={[styles.slotsRow, { gap: dynamicGap }]} onLayout={handleSlotsLayout}>
           {letters.map((letter, index) => {
             const value = filled[index];
             return (
@@ -204,23 +249,47 @@ export default function WordRound({ word, hintRequest, onHintApplied, onComplete
                   {
                     borderColor: value ? colors.success : colors.border,
                     backgroundColor: value ? '#E4FBEE' : colors.background,
+                    width: dynamicTileSize,
+                    height: dynamicTileSize,
+                    borderRadius: dynamicTileSize / 2,
                   },
                 ]}
               >
-                {value ? <Text style={styles.slotLetter}>{value}</Text> : null}
+                {value ? <Text style={[styles.slotLetter, { fontSize: dynamicTileSize * 0.45 }]}>{value}</Text> : null}
               </View>
             );
           })}
         </View>
       </View>
 
-      <View style={styles.tray}>
+      <View style={styles.actionsRow}>
+        <Pressable
+          onPress={handleHintPress}
+          disabled={hintTokens <= 0}
+          style={[styles.actionButton, { backgroundColor: '#3AB0FF', opacity: hintTokens <= 0 ? 0.4 : 1 }]}
+        >
+          <Feather name="help-circle" size={18} color="#FFFFFF" />
+          <Text style={styles.actionText}>İpucu ({hintTokens})</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleSkipPress}
+          disabled={skipTokens <= 0}
+          style={[styles.actionButton, { backgroundColor: '#FFD166', opacity: skipTokens <= 0 ? 0.4 : 1 }]}
+        >
+          <Feather name="skip-forward" size={18} color="#FFFFFF" />
+          <Text style={styles.actionText}>Pas Geç ({skipTokens})</Text>
+        </Pressable>
+      </View>
+
+      <View style={[styles.tray, { gap: dynamicGap }]}>
         {tiles.map((tile) => (
-          <View key={tile.key} style={styles.trayItem}>
+          <View key={tile.key} style={[styles.trayItem, { width: dynamicTileSize, height: dynamicTileSize }]}>
             <LetterTile
               letter={tile.letter}
               color={tile.color}
               locked={usedTileKeys.current.has(tile.key)}
+              size={dynamicTileSize}
               onAttemptDrop={attemptDrop}
             />
           </View>
@@ -277,13 +346,35 @@ const styles = StyleSheet.create({
   slotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
-    marginTop: 16,
+    flexWrap: 'wrap',
+    padding: 16,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginVertical: 12,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  actionText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   slot: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: TILE_SIZE / 2,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -299,10 +390,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 16,
     paddingTop: 20,
-    gap: 10,
   },
-  trayItem: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-  },
+  trayItem: {},
 });

@@ -12,7 +12,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 
-export const TILE_SIZE = 56;
+export const DEFAULT_TILE_SIZE = 56;
 
 export type DropResult = { correct: boolean; dx: number; dy: number };
 
@@ -20,10 +20,11 @@ type LetterTileProps = {
   letter: string;
   color: string;
   locked: boolean;
+  size?: number;
   onAttemptDrop: (letter: string, centerX: number, centerY: number) => DropResult;
 };
 
-export default function LetterTile({ letter, color, locked, onAttemptDrop }: LetterTileProps) {
+export default function LetterTile({ letter, color, locked, size = DEFAULT_TILE_SIZE, onAttemptDrop }: LetterTileProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -61,7 +62,13 @@ export default function LetterTile({ letter, color, locked, onAttemptDrop }: Let
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       } else {
-        translateX.value = withSpring(0);
+        translateX.value = withSequence(
+          withTiming(-12, { duration: 50 }),
+          withTiming(12, { duration: 50 }),
+          withTiming(-12, { duration: 50 }),
+          withTiming(12, { duration: 50 }),
+          withSpring(0)
+        );
         translateY.value = withSpring(0);
         playWrongSound();
         if (Platform.OS !== 'web') {
@@ -101,10 +108,19 @@ export default function LetterTile({ letter, color, locked, onAttemptDrop }: Let
     <GestureDetector gesture={pan}>
       <Animated.View
         ref={viewRef}
-        style={[styles.tile, { backgroundColor: locked ? '#4CD787' : color }, animatedStyle]}
+        style={[
+          styles.tile, 
+          { 
+            backgroundColor: locked ? '#4CD787' : color,
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+          }, 
+          animatedStyle
+        ]}
         pointerEvents={locked ? 'none' : 'auto'}
       >
-        <Text style={styles.letter}>{letter}</Text>
+        <Text style={[styles.letter, { fontSize: size * 0.45 }]}>{letter}</Text>
       </Animated.View>
     </GestureDetector>
   );
@@ -112,9 +128,6 @@ export default function LetterTile({ letter, color, locked, onAttemptDrop }: Let
 
 const styles = StyleSheet.create({
   tile: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: TILE_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -124,7 +137,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   letter: {
-    fontSize: 24,
     fontWeight: '800',
     color: '#FFFFFF',
   },

@@ -1,11 +1,15 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
 
-export default function GameHeader() {
+type GameHeaderProps = {
+  onBack?: () => void;
+};
+
+export default function GameHeader({ onBack }: GameHeaderProps = {}) {
   const colors = useColors();
   const { coins } = useGameState();
   const { t } = useI18n();
@@ -13,10 +17,14 @@ export default function GameHeader() {
   return (
     <View style={styles.row}>
       <View style={styles.identity}>
+        {onBack && (
+          <Pressable onPress={onBack} style={styles.backBtn}>
+            <Feather name="arrow-left" size={24} color={colors.primary} />
+          </Pressable>
+        )}
         <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
           <Image source={require('../assets/images/icon.png')} style={styles.avatarImage} />
         </View>
-        <Text style={[styles.title, { color: colors.primary }]}>{t('appTitle')}</Text>
       </View>
 
       <View style={[styles.coinBadge, { backgroundColor: colors.accent }]}>
@@ -54,10 +62,19 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 18,
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   coinBadge: {
     flexDirection: 'row',

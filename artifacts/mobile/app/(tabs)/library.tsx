@@ -4,7 +4,16 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import GameHeader from '@/components/GameHeader';
+
+const CATEGORY_COLORS: Record<string, { bg: string; border: string }> = {
+  fruits: { bg: '#93D656', border: '#5DAE30' },
+  animals: { bg: '#FFAC4A', border: '#E08520' },
+  numbers: { bg: '#56A8DF', border: '#327EBC' },
+  colors: { bg: '#F14A6F', border: '#C6244A' },
+  flags: { bg: '#9B72CF', border: '#7B58A6' },
+};
 import categories from '@/constants/library';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
@@ -26,7 +35,7 @@ export default function LibraryScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 }]}
     >
       <GameHeader />
       <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('learnedWords')}</Text>
@@ -34,21 +43,40 @@ export default function LibraryScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {categories.map((category) => {
           const selected = category.id === selectedCategory;
+          const colorData = CATEGORY_COLORS[category.id] || { bg: '#56A8DF', border: '#327EBC' };
 
           return (
             <View key={category.id} style={styles.section}>
               <Pressable
-                onPress={() => setSelectedCategory(category.id)}
+                onPress={() => {
+                  setSelectedCategory(category.id);
+                  router.navigate('/game');
+                }}
                 style={[
                   styles.sectionHeader,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                  selected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                  { 
+                    backgroundColor: colorData.bg, 
+                    borderColor: colorData.border,
+                    transform: [{ scale: selected ? 1.03 : 1 }],
+                    opacity: selected ? 1 : 0.85
+                  },
                 ]}
               >
+                <View style={styles.jellyHighlight} />
                 <View style={styles.sectionHeaderLeft}>
-                  <Feather name={category.icon as any} size={18} color={selected ? '#FFFFFF' : colors.secondary} />
-                  <Text style={[styles.sectionTitle, { color: selected ? '#FFFFFF' : colors.foreground }]}>
+                  <Text style={{ fontSize: 24 }}>{category.emoji}</Text>
+                  <Text style={[styles.sectionTitle, { color: '#FFFFFF' }]}>
                     {t(category.titleKey)}
+                    {(() => {
+                      const playableItems = category.items.filter((item) => item.wordId);
+                      const totalPlayable = playableItems.length;
+                      if (totalPlayable === 0) return null;
+                      const completedCount = playableItems.filter((item) => {
+                        const gameIndex = wordIndexById.get(item.wordId!);
+                        return gameIndex !== undefined && completedLevels.includes(gameIndex);
+                      }).length;
+                      return ` (${completedCount}/${totalPlayable})`;
+                    })()}
                   </Text>
                 </View>
                 {selected ? <Feather name="check-circle" size={18} color="#FFFFFF" /> : null}
@@ -83,7 +111,6 @@ export default function LibraryScreen() {
                             style={[
                               styles.swatch,
                               { backgroundColor: item.swatch, borderColor: colors.border },
-                              !unlocked && { opacity: 0.3 },
                             ]}
                           />
                         ) : (
@@ -92,6 +119,10 @@ export default function LibraryScreen() {
                         {gated && !unlocked ? (
                           <View style={styles.lockBadge}>
                             <Feather name="lock" size={14} color={colors.mutedForeground} />
+                          </View>
+                        ) : unlocked ? (
+                          <View style={[styles.lockBadge, { backgroundColor: '#E8F5E9' }]}>
+                            <Feather name="check" size={14} color="#2E7D32" />
                           </View>
                         ) : null}
                       </View>
@@ -129,10 +160,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderBottomWidth: 6,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  jellyHighlight: {
+    position: 'absolute',
+    top: 4,
+    left: '10%',
+    right: '10%',
+    height: 10,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 5,
   },
   sectionHeaderLeft: {
     flexDirection: 'row',

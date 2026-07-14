@@ -10,7 +10,51 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: leaderboard
+    description: Global superhero leaderboard operations
 paths:
+  /leaderboard/entries:
+    get:
+      operationId: listLeaderboardEntries
+      tags: [leaderboard]
+      summary: List top leaderboard entries
+      description: Returns leaderboard entries ordered by coins descending, with rank assigned.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 100
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+    post:
+      operationId: upsertLeaderboardEntry
+      tags: [leaderboard]
+      summary: Create or update the caller's leaderboard entry
+      description: Upserts a leaderboard entry keyed by deviceId (no login required).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeaderboardEntryInput"
+      responses:
+        "200":
+          description: Upserted leaderboard entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardEntry"
   /healthz:
     get:
       operationId: healthCheck
@@ -33,4 +77,64 @@ components:
           type: string
       required:
         - status
+    AvatarConfig:
+      type: object
+      description: Ids of the chosen superhero avatar parts.
+      properties:
+        mask:
+          type: string
+        cape:
+          type: string
+        body:
+          type: string
+        accessory:
+          type: string
+      required:
+        - mask
+        - cape
+        - body
+        - accessory
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        nickname:
+          type: string
+        coins:
+          type: integer
+        avatar:
+          $ref: "#/components/schemas/AvatarConfig"
+        rank:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nickname
+        - coins
+        - avatar
+        - rank
+        - updatedAt
+    LeaderboardEntryInput:
+      type: object
+      properties:
+        deviceId:
+          type: string
+          minLength: 1
+        nickname:
+          type: string
+          minLength: 1
+          maxLength: 20
+        coins:
+          type: integer
+          minimum: 0
+        avatar:
+          $ref: "#/components/schemas/AvatarConfig"
+      required:
+        - deviceId
+        - nickname
+        - coins
+        - avatar
 

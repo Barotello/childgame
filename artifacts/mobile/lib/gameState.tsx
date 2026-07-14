@@ -15,6 +15,8 @@ type PersistedState = {
   highestUnlocked: number;
   completedLevels: number[];
   hintTokens: number;
+  skipTokens: number;
+  wordsProgress: number;
   muted: boolean;
   currentLevel: number;
   selectedCategory: CategoryId;
@@ -30,6 +32,8 @@ const DEFAULT_STATE: PersistedState = {
   highestUnlocked: 0,
   completedLevels: [],
   hintTokens: 1,
+  skipTokens: 3,
+  wordsProgress: 0,
   muted: false,
   currentLevel: FIRST_ANIMAL_INDEX,
   selectedCategory: 'animals',
@@ -47,6 +51,7 @@ type GameStateContextValue = PersistedState & {
   buyHint: () => boolean;
   buyHintPack: () => boolean;
   consumeHintToken: () => boolean;
+  consumeSkipToken: () => boolean;
   toggleMute: () => void;
 };
 
@@ -104,22 +109,48 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       },
       setSelectedCategory: (category: CategoryId) => {
         setState((prev) => {
-          const firstInCategory = words.findIndex((w) => w.category === category);
+          const categoryIndices: number[] = [];
+          for (let i = 0; i < words.length; i++) {
+            if (words[i].category === category) categoryIndices.push(i);
+          }
+
+          if (categoryIndices.length === 0) {
+            return { ...prev, selectedCategory: category };
+          }
+
+          let nextLevel = categoryIndices.find((idx) => !prev.completedLevels.includes(idx));
+          if (nextLevel === undefined) {
+            nextLevel = categoryIndices[0]; // If all completed, just restart from the first one
+          }
+
           return {
             ...prev,
             selectedCategory: category,
-            currentLevel: firstInCategory >= 0 ? firstInCategory : prev.currentLevel,
+            currentLevel: nextLevel,
           };
         });
       },
       completeLevel: (index: number) => {
         setState((prev) => {
-          if (prev.completedLevels.includes(index)) return prev;
+          const isNew = !prev.completedLevels.includes(index);
+          let newSkipTokens = prev.skipTokens;
+          let newWordsProgress = prev.wordsProgress;
+          
+          if (isNew) {
+            newWordsProgress += 1;
+            if (newWordsProgress >= 15) {
+              newSkipTokens += 3;
+              newWordsProgress = 0;
+            }
+          }
+
           return {
             ...prev,
-            coins: prev.coins + LEVEL_REWARD_COINS,
-            completedLevels: [...prev.completedLevels, index],
-            highestUnlocked: Math.min(Math.max(prev.highestUnlocked, index + 1), totalLevels - 1),
+            coins: isNew ? prev.coins + LEVEL_REWARD_COINS : prev.coins,
+            completedLevels: isNew ? [...prev.completedLevels, index] : prev.completedLevels,
+            highestUnlocked: Math.max(prev.highestUnlocked, index + 1),
+            skipTokens: newSkipTokens,
+            wordsProgress: newWordsProgress,
           };
         });
       },
@@ -142,13 +173,26 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         return success;
       },
       consumeHintToken: () => {
-        let success = false;
+        let consumed = false;
         setState((prev) => {
-          if (prev.hintTokens <= 0) return prev;
-          success = true;
-          return { ...prev, hintTokens: prev.hintTokens - 1 };
+          if (prev.hintTokens > 0) {
+            consumed = true;
+            return { ...prev, hintTokens: prev.hintTokens - 1 };
+          }
+          return prev;
         });
-        return success;
+        return consumed;
+      },
+      consumeSkipToken: () => {
+        let consumed = false;
+        setState((prev) => {
+          if (prev.skipTokens > 0) {
+            consumed = true;
+            return { ...prev, skipTokens: prev.skipTokens - 1 };
+          }
+          return prev;
+        });
+        return consumed;
       },
       toggleMute: () => {
         setState((prev) => {

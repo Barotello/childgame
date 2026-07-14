@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
@@ -26,45 +25,58 @@ type TabBarProps = {
   };
 };
 
+const TAB_COLORS: Record<string, { bg: string; border: string }> = {
+  game: { bg: '#93D656', border: '#5DAE30' },
+  library: { bg: '#56A8DF', border: '#327EBC' },
+  store: { bg: '#FFAC4A', border: '#E08520' },
+  settings: { bg: '#F14A6F', border: '#C6244A' },
+};
+
 function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { bottom: insets.bottom + 18 }]}>
-      <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
-      <View style={styles.tabBar}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label = options.title ?? route.name;
-          const isFocused = state.index === index;
-          const color = isFocused ? colors.primary : colors.mutedForeground;
-          const icon = options.tabBarIcon
-            ? options.tabBarIcon({ focused: isFocused, color, size: 22 })
-            : null;
+    <View style={[styles.container, { bottom: insets.bottom + 12 }]}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+        const colorData = TAB_COLORS[route.name] || TAB_COLORS.game;
+        
+        const icon = options.tabBarIcon
+          ? options.tabBarIcon({ focused: isFocused, color: '#FFFFFF', size: 28 })
+          : null;
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name, route.params);
-            }
-          };
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
 
-          return (
-            <Pressable key={route.key} onPress={onPress} style={styles.tabButton}>
-              <View style={styles.tabButtonInner}>
-                {icon}
-                <Text style={[styles.tabLabel, { color }]}>{label}</Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
+        return (
+          <Pressable key={route.key} onPress={onPress} style={styles.tabButton}>
+            <View 
+              style={[
+                styles.jellyButton, 
+                { 
+                  backgroundColor: colorData.bg, 
+                  borderColor: colorData.border,
+                  transform: [{ scale: isFocused ? 1.15 : 0.9 }],
+                  opacity: isFocused ? 1 : 0.7,
+                }
+              ]}
+            >
+              <View style={styles.jellyHighlight} />
+              {icon}
+            </View>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -83,7 +95,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="game"
         options={{
           title: t('play'),
           tabBarIcon: ({ color, size }) => <Feather name="play-circle" size={size} color={color} />,
@@ -119,36 +131,47 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    height: 60,
-    borderRadius: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.45)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.14,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  tabBar: {
-    flex: 1,
+    height: 86,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 43,
+    borderWidth: 4,
+    borderColor: '#F0E6FF',
+    paddingHorizontal: 16,
+    shadowColor: '#3B2F63',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
   },
-  tabButtonInner: {
-    alignItems: 'center',
+  jellyButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderBottomWidth: 6,
     justifyContent: 'center',
-    gap: 2,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  tabLabel: {
-    fontSize: 11,
-    fontWeight: '700',
+  jellyHighlight: {
+    position: 'absolute',
+    top: 4,
+    left: '15%',
+    right: '15%',
+    height: 10,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 5,
   },
 });
