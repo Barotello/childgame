@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import GameHeader from '@/components/GameHeader';
-import { LOCALE_LABELS, type Locale } from '@/constants/translations';
+import { LOCALE_FLAGS, LOCALE_LABELS, type Locale } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
@@ -43,7 +43,9 @@ export default function SettingsScreen() {
                   selected && { backgroundColor: '#E4FBEE', borderColor: colors.success },
                 ]}
               >
-                <Text style={[styles.langLabel, { color: colors.foreground }]}>{LOCALE_LABELS[lang]}</Text>
+                <Text style={[styles.langLabel, { color: colors.foreground }]}>
+                  {LOCALE_FLAGS[lang]} {LOCALE_LABELS[lang]}
+                </Text>
                 {selected ? <Feather name="check-circle" size={18} color={colors.success} /> : null}
               </Pressable>
             );

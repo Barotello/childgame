@@ -10,6 +10,15 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   tr: 'Türkçe',
 };
 
+export const LOCALE_FLAGS: Record<Locale, string> = {
+  en: '🇬🇧',
+  fr: '🇫🇷',
+  es: '🇪🇸',
+  it: '🇮🇹',
+  de: '🇩🇪',
+  tr: '🇹🇷',
+};
+
 const tr = {
   appTitle: 'Kelime\nBulmaca',
   play: 'Oyna',
