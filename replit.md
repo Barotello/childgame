@@ -19,11 +19,12 @@ Bir Türkçe kelime/harf sürükle-bırak oyunu (Expo/React Native), 4-7 yaş ar
 
 ## Product
 
-- **Oyna** sekmesi: hedef nesnenin silüeti + harf sayısı kadar yuvarlak boş yuva; altta karışık harfler (doğru harfler + 2 çeldirici); doğru harf yuvaya bırakılınca ses+haptik+animasyon; kelime tamamlanınca görsel renkleniyor, kutlama ekranı ve coin ödülü geliyor.
+- **Oyna** sekmesi: hedef nesnenin silüeti + harf sayısı kadar yuvarlak boş yuva; altta karışık harfler (doğru harfler + 2 çeldirici); doğru harf yuvaya bırakılınca ses+haptik+animasyon; kelime tamamlanınca görsel renkleniyor, kutlama ekranı ve coin ödülü geliyor; bir sonraki seviyeye otomatik ilerliyor.
 - **Kitaplık** sekmesi: tamamlanan kelimeler renkli görsel+yazıyla, kilitli olanlar gri silüet+kilit ikonuyla gösteriliyor.
-- **Mağaza** sekmesi: coin karşılığı ipucu jetonu satın alma (tekli/5'li paket), ses efektleri aç/kapa anahtarı.
-- **Harita** sekmesi: 10 seviyelik yol haritası — tamamlanan (yeşil/tik), sıradaki (turuncu, numaralı), kilitli (gri/kilit) seviyeler; açık bir seviyeye dokununca Oyna sekmesine o seviyeyle geçiyor.
-- İlerleme (coin, açılan/tamamlanan seviyeler, ipucu jetonu sayısı, ses aç/kapa) `lib/gameState.tsx` içindeki tek bir Context + AsyncStorage ile kalıcı tutuluyor.
+- **Mağaza** sekmesi: coin karşılığı ipucu jetonu satın alma (tekli/5'li paket).
+- **Ayarlar** sekmesi: uygulama dili (Türkçe, English, Français, Español, Italiano, Deutsch) ve ses efektleri aç/kapa ayarları.
+- **6 dil desteği**: tüm arayüz metinleri `lib/i18n.tsx` + `constants/translations.ts` üzerinden çevrilebilir; oyunun asıl kelimeleri (ördek, ayı vb.) Türkçe kalıyor çünkü oyun bir Türkçe kelime öğrenme aracı.
+- İlerleme (coin, açılan/tamamlanan seviyeler, ipucu jetonu sayısı, ses aç/kapa, dil tercihi) `lib/gameState.tsx` ve `lib/i18n.tsx` içindeki Context'ler + AsyncStorage ile kalıcı tutuluyor.
 
 ## Gotchas
 

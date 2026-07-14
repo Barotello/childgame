@@ -5,6 +5,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GameStateProvider } from '@/lib/gameState';
+import { I18nProvider } from '@/lib/i18n';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -50,9 +51,11 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <GameStateProvider>
-                <RootLayoutNav />
-              </GameStateProvider>
+              <I18nProvider>
+                <GameStateProvider>
+                  <RootLayoutNav />
+                </GameStateProvider>
+              </I18nProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

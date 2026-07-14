@@ -3,10 +3,12 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
+import { useI18n } from '@/lib/i18n';
 
 export default function GameHeader() {
   const colors = useColors();
   const { coins } = useGameState();
+  const { t } = useI18n();
 
   return (
     <View style={styles.row}>
@@ -14,12 +16,14 @@ export default function GameHeader() {
         <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
           <Image source={require('../assets/images/icon.png')} style={styles.avatarImage} />
         </View>
-        <Text style={[styles.title, { color: colors.primary }]}>Kelime{'\n'}Bulmaca</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>{t('appTitle')}</Text>
       </View>
 
       <View style={[styles.coinBadge, { backgroundColor: colors.accent }]}>
         <Feather name="star" size={16} color={colors.accentForeground} />
-        <Text style={[styles.coinText, { color: colors.accentForeground }]}>{coins} Coin</Text>
+        <Text style={[styles.coinText, { color: colors.accentForeground }]}>
+          {coins} {t('coins')}
+        </Text>
       </View>
     </View>
   );

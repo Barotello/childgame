@@ -1,0 +1,187 @@
+export const LOCALES = ['en', 'fr', 'es', 'it', 'de', 'tr'] as const;
+export type Locale = (typeof LOCALES)[number];
+
+export const LOCALE_LABELS: Record<Locale, string> = {
+  en: 'English',
+  fr: 'Français',
+  es: 'Español',
+  it: 'Italiano',
+  de: 'Deutsch',
+  tr: 'Türkçe',
+};
+
+const tr = {
+  appTitle: 'Kelime\nBulmaca',
+  play: 'Oyna',
+  library: 'Kitaplık',
+  store: 'Mağaza',
+  settings: 'Ayarlar',
+  level: 'Seviye {current} / {total}',
+  hint: 'İpucu',
+  hintTokens: 'İpucu jetonun: {n}',
+  hintDesc:
+    'Bir kelimede takılırsan ipucu kullanarak doğru harfi kutuya otomatik yerleştirebilirsin.',
+  coins: 'Coin',
+  coinEarned: '+{n} Coin',
+  soundEffects: 'Ses efektleri',
+  soundOn: 'Açık',
+  soundOff: 'Kapalı',
+  chooseLanguage: 'Dil seç',
+  language: 'Dil',
+  buyHint1: '1 İpucu',
+  buyHint5: '{n} İpucu Paketi',
+  learnedWords: 'Öğrendiğin kelimeler',
+  locked: '???',
+  purchaseHintSuccess: '1 ipucu satın alındı!',
+  purchasePackSuccess: '{n} ipucu satın alındı!',
+  purchaseHintFail: 'Yetersiz coin',
+  praise: ['Harika!', 'Süpersin!', 'Aferin!', 'Çok güzel!', 'Bravo!'],
+};
+
+const en = {
+  appTitle: 'Word\nPuzzle',
+  play: 'Play',
+  library: 'Library',
+  store: 'Store',
+  settings: 'Settings',
+  level: 'Level {current} / {total}',
+  hint: 'Hint',
+  hintTokens: 'Hint tokens: {n}',
+  hintDesc:
+    'If you get stuck on a word, use a hint to place the correct letter automatically.',
+  coins: 'Coins',
+  coinEarned: '+{n} Coins',
+  soundEffects: 'Sound effects',
+  soundOn: 'On',
+  soundOff: 'Off',
+  chooseLanguage: 'Choose language',
+  language: 'Language',
+  buyHint1: '1 Hint',
+  buyHint5: '{n} Hint Pack',
+  learnedWords: 'Words you learned',
+  locked: '???',
+  purchaseHintSuccess: '1 hint purchased!',
+  purchasePackSuccess: '{n} hints purchased!',
+  purchaseHintFail: 'Not enough coins',
+  praise: ['Great!', 'Super!', 'Well done!', 'Very nice!', 'Bravo!'],
+};
+
+const fr = {
+  appTitle: 'Jeu de\nMots',
+  play: 'Jouer',
+  library: 'Bibliothèque',
+  store: 'Magasin',
+  settings: 'Paramètres',
+  level: 'Niveau {current} / {total}',
+  hint: 'Indice',
+  hintTokens: "Jetons d'indice : {n}",
+  hintDesc:
+    "Si tu bloques sur un mot, utilise un indice pour placer la bonne lettre automatiquement.",
+  coins: 'Pièces',
+  coinEarned: '+{n} pièces',
+  soundEffects: 'Effets sonores',
+  soundOn: 'Activé',
+  soundOff: 'Désactivé',
+  chooseLanguage: 'Choisir la langue',
+  language: 'Langue',
+  buyHint1: '1 indice',
+  buyHint5: "Pack de {n} indices",
+  learnedWords: 'Mots appris',
+  locked: '???',
+  purchaseHintSuccess: '1 indice acheté !',
+  purchasePackSuccess: 'Pack de {n} indices acheté !',
+  purchaseHintFail: 'Pas assez de pièces',
+  praise: ['Super!', 'Génial!', 'Bien joué!', 'Très bien!', 'Bravo!'],
+};
+
+const es = {
+  appTitle: 'Juego de\nPalabras',
+  play: 'Jugar',
+  library: 'Biblioteca',
+  store: 'Tienda',
+  settings: 'Ajustes',
+  level: 'Nivel {current} / {total}',
+  hint: 'Pista',
+  hintTokens: 'Pistas: {n}',
+  hintDesc:
+    'Si te atascas en una palabra, usa una pista para colocar la letra correcta automáticamente.',
+  coins: 'Monedas',
+  coinEarned: '+{n} monedas',
+  soundEffects: 'Efectos de sonido',
+  soundOn: 'Activado',
+  soundOff: 'Desactivado',
+  chooseLanguage: 'Elegir idioma',
+  language: 'Idioma',
+  buyHint1: '1 pista',
+  buyHint5: 'Pack de {n} pistas',
+  learnedWords: 'Palabras aprendidas',
+  locked: '???',
+  purchaseHintSuccess: '¡1 pista comprada!',
+  purchasePackSuccess: '¡Pack de {n} pistas comprado!',
+  purchaseHintFail: 'Monedas insuficientes',
+  praise: ['¡Genial!', '¡Súper!', '¡Muy bien!', '¡Excelente!', '¡Bravo!'],
+};
+
+const it = {
+  appTitle: 'Parole\nPuzzle',
+  play: 'Gioca',
+  library: 'Biblioteca',
+  store: 'Negozio',
+  settings: 'Impostazioni',
+  level: 'Livello {current} / {total}',
+  hint: 'Suggerimento',
+  hintTokens: 'Suggerimenti: {n}',
+  hintDesc:
+    'Se resti bloccato su una parola, usa un suggerimento per posizionare la lettera corretta automaticamente.',
+  coins: 'Monete',
+  coinEarned: '+{n} monete',
+  soundEffects: 'Effetti sonori',
+  soundOn: 'Acceso',
+  soundOff: 'Spento',
+  chooseLanguage: 'Scegli lingua',
+  language: 'Lingua',
+  buyHint1: '1 suggerimento',
+  buyHint5: 'Pacchetto {n} suggerimenti',
+  learnedWords: 'Parole apprese',
+  locked: '???',
+  purchaseHintSuccess: '1 suggerimento acquistato!',
+  purchasePackSuccess: 'Pacchetto {n} suggerimenti acquistato!',
+  purchaseHintFail: 'Monete insufficienti',
+  praise: ['Grande!', 'Super!', 'Bravissimo!', 'Bellissimo!', 'Bravo!'],
+};
+
+const de = {
+  appTitle: 'Wort\nRätsel',
+  play: 'Spielen',
+  library: 'Bibliothek',
+  store: 'Geschäft',
+  settings: 'Einstellungen',
+  level: 'Level {current} / {total}',
+  hint: 'Hinweis',
+  hintTokens: 'Hinweise: {n}',
+  hintDesc:
+    'Wenn du bei einem Wort nicht weiterkommst, verwende einen Hinweis, um den richtigen Buchstaben automatisch zu platzieren.',
+  coins: 'Münzen',
+  coinEarned: '+{n} Münzen',
+  soundEffects: 'Soundeffekte',
+  soundOn: 'An',
+  soundOff: 'Aus',
+  chooseLanguage: 'Sprache wählen',
+  language: 'Sprache',
+  buyHint1: '1 Hinweis',
+  buyHint5: '{n}-Hinweis-Pack',
+  learnedWords: 'Gelernte Wörter',
+  locked: '???',
+  purchaseHintSuccess: '1 Hinweis gekauft!',
+  purchasePackSuccess: '{n}-Hinweis-Pack gekauft!',
+  purchaseHintFail: 'Nicht genug Münzen',
+  praise: ['Super!', 'Toll!', 'Gut gemacht!', 'Sehr schön!', 'Bravo!'],
+};
+
+export const translations = { en, fr, es, it, de, tr } as const;
+
+type StringKeys = {
+  [K in keyof typeof tr]: (typeof tr)[K] extends string ? K : never;
+}[keyof typeof tr];
+
+export type TranslationKey = StringKeys;

@@ -10,12 +10,14 @@ import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
 import { playCelebrateSound } from '@/lib/sounds';
 import { useGameState } from '@/lib/gameState';
+import { useI18n } from '@/lib/i18n';
 
 const COINS_PER_LEVEL = 15;
 
 export default function PlayScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const {
     currentLevel,
     totalLevels,
@@ -78,7 +80,7 @@ export default function PlayScreen() {
             ]}
           />
           <Text style={[styles.progressLabel, { color: colors.foreground }]}>
-            Seviye {currentLevel + 1} / {totalLevels}
+            {t('level', { current: currentLevel + 1, total: totalLevels })}
           </Text>
         </View>
       </View>
@@ -97,7 +99,9 @@ export default function PlayScreen() {
         style={[styles.hintButton, { opacity: hintTokens <= 0 ? 0.4 : 1 }]}
       >
         <Feather name="help-circle" size={18} color={colors.secondary} />
-        <Text style={[styles.hintText, { color: colors.secondary }]}>İpucu ({hintTokens})</Text>
+        <Text style={[styles.hintText, { color: colors.secondary }]}>
+          {t('hint')} ({hintTokens})
+        </Text>
       </Pressable>
 
       {celebrating ? <Celebration word={currentWord} coinsEarned={COINS_PER_LEVEL} /> : null}

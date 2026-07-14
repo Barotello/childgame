@@ -11,8 +11,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import type { WordItem } from '@/constants/words';
-
-const PRAISE = ['Harika!', 'Süpersin!', 'Aferin!', 'Çok güzel!', 'Bravo!'];
+import { translations } from '@/constants/translations';
+import { useI18n } from '@/lib/i18n';
 const PARTICLE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#38C6B0', '#FF8FB1'];
 const PARTICLE_COUNT = 14;
 
@@ -53,7 +53,9 @@ type CelebrationProps = {
 };
 
 export default function Celebration({ word, coinsEarned }: CelebrationProps) {
-  const praise = useMemo(() => PRAISE[Math.floor(Math.random() * PRAISE.length)], []);
+  const { locale, t } = useI18n();
+  const praiseList = translations[locale].praise;
+  const praise = useMemo(() => praiseList[Math.floor(Math.random() * praiseList.length)], [praiseList]);
   const particles = useMemo(buildParticles, []);
   const scale = useSharedValue(0.6);
 
@@ -77,7 +79,7 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
         <Image source={word.image} style={styles.image} contentFit="contain" />
         <Text style={styles.word}>{word.letters.join('')}</Text>
         <Text style={styles.praise}>{praise}</Text>
-        {coinsEarned ? <Text style={styles.coins}>+{coinsEarned} Coin</Text> : null}
+        {coinsEarned ? <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text> : null}
       </Animated.View>
     </View>
   );

@@ -8,10 +8,12 @@ import GameHeader from '@/components/GameHeader';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
+import { useI18n } from '@/lib/i18n';
 
 export default function LibraryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const { completedLevels } = useGameState();
 
   return (
@@ -20,7 +22,7 @@ export default function LibraryScreen() {
       style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom }]}
     >
       <GameHeader />
-      <Text style={[styles.subtitle, { color: colors.foreground }]}>Öğrendiğin kelimeler</Text>
+      <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('learnedWords')}</Text>
 
       <ScrollView contentContainerStyle={styles.grid}>
         {words.map((word, index) => {
@@ -44,7 +46,7 @@ export default function LibraryScreen() {
                 ) : null}
               </View>
               <Text style={[styles.word, { color: unlocked ? colors.foreground : colors.mutedForeground }]}>
-                {unlocked ? word.letters.join('') : '???'}
+                {unlocked ? word.letters.join('') : t('locked')}
               </Text>
             </View>
           );
