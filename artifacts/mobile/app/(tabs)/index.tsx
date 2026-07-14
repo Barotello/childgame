@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import WordRound from '@/components/WordRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
+import categories from '@/constants/library';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
 import { playCelebrateSound } from '@/lib/sounds';
@@ -23,17 +24,22 @@ export default function PlayScreen() {
     totalLevels,
     muted,
     hintTokens,
+    selectedCategory,
     toggleMute,
     consumeHintToken,
     completeLevel,
     setCurrentLevel,
+    setSelectedCategory,
   } = useGameState();
 
   const [celebrating, setCelebrating] = useState(false);
   const [hintRequest, setHintRequest] = useState(0);
 
   const currentWord = words[currentLevel];
-  const roundKey = `${currentWord.id}-${currentLevel}`;
+
+  const categoryWords = words.filter((w) => w.category === selectedCategory);
+  const currentCategoryIndex = categoryWords.findIndex((w) => w.id === currentWord?.id);
+  const hasCategoryWords = categoryWords.length > 0;
 
   const handleComplete = () => {
     completeLevel(currentLevel);
@@ -41,8 +47,12 @@ export default function PlayScreen() {
     playCelebrateSound();
     setTimeout(() => {
       setCelebrating(false);
-      if (currentLevel < totalLevels - 1) {
-        setCurrentLevel(currentLevel + 1);
+      if (hasCategoryWords) {
+        const nextInCategory = categoryWords[currentCategoryIndex + 1];
+        if (nextInCategory) {
+          const nextIndex = words.findIndex((w) => w.id === nextInCategory.id);
+          setCurrentLevel(nextIndex);
+        }
       }
     }, 1500);
   };
@@ -54,6 +64,10 @@ export default function PlayScreen() {
       setHintRequest((n) => n + 1);
     }
   };
+
+  const roundKey = hasCategoryWords && currentWord?.category === selectedCategory
+    ? `${currentWord.id}-${currentLevel}-${hintRequest}`
+    : 'empty';
 
   return (
     <LinearGradient
@@ -75,23 +89,66 @@ export default function PlayScreen() {
               styles.progressFill,
               {
                 backgroundColor: colors.primary,
-                width: `${((currentLevel + 1) / totalLevels) * 100}%`,
+                width: hasCategoryWords
+                  ? `${((currentCategoryIndex + 1) / categoryWords.length) * 100}%`
+                  : `${((currentLevel + 1) / totalLevels) * 100}%`,
               },
             ]}
           />
           <Text style={[styles.progressLabel, { color: colors.foreground }]}>
-            {t('level', { current: currentLevel + 1, total: totalLevels })}
+            {hasCategoryWords
+              ? t('level', { current: currentCategoryIndex + 1, total: categoryWords.length })
+              : t('level', { current: currentLevel + 1, total: totalLevels })}
           </Text>
         </View>
       </View>
 
-      <WordRound
-        key={roundKey}
-        word={currentWord}
-        hintRequest={hintRequest}
-        onHintApplied={() => {}}
-        onComplete={handleComplete}
-      />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+        style={styles.chipScroll}
+      >
+        {categories.map((cat) => {
+          const selected = cat.id === selectedCategory;
+          return (
+            <Pressable
+              key={cat.id}
+              onPress={() => setSelectedCategory(cat.id)}
+              style={[
+                styles.chip,
+                { backgroundColor: colors.card, borderColor: colors.border },
+                selected && { backgroundColor: colors.primary, borderColor: colors.primary },
+              ]}
+            >
+              <Feather name={cat.icon as any} size={15} color={selected ? '#FFFFFF' : colors.secondary} />
+              <Text style={[styles.chipLabel, { color: selected ? '#FFFFFF' : colors.foreground }]}>
+                {t(cat.titleKey)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      {hasCategoryWords && currentWord?.category === selectedCategory ? (
+        <WordRound
+          key={roundKey}
+          word={currentWord}
+          hintRequest={hintRequest}
+          onHintApplied={() => {}}
+          onComplete={handleComplete}
+        />
+      ) : (
+        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Feather name="book-open" size={40} color={colors.secondary} />
+          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+            {t('category' + selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) as any)}
+          </Text>
+          <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>
+            Bu kategoride kelime bulmacası yok.{'\n'}Kitaplıkta bu kategoriyi keşfet!
+          </Text>
+        </View>
+      )}
 
       <Pressable
         onPress={handleHintPress}
@@ -138,6 +195,49 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '700',
+  },
+  chipScroll: {
+    flexGrow: 0,
+    marginBottom: 14,
+  },
+  chipRow: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  chipLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  emptyCard: {
+    flex: 1,
+    marginHorizontal: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  emptyBody: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   hintButton: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { type CategoryId } from '@/constants/library';
 import words from '@/constants/words';
 import { setSoundsMuted } from '@/lib/sounds';
 
@@ -16,6 +17,7 @@ type PersistedState = {
   hintTokens: number;
   muted: boolean;
   currentLevel: number;
+  selectedCategory: CategoryId;
 };
 
 const DEFAULT_STATE: PersistedState = {
@@ -25,6 +27,7 @@ const DEFAULT_STATE: PersistedState = {
   hintTokens: 1,
   muted: false,
   currentLevel: 0,
+  selectedCategory: 'animals',
 };
 
 type GameStateContextValue = PersistedState & {
@@ -34,6 +37,7 @@ type GameStateContextValue = PersistedState & {
   hintPackCost: number;
   hintPackSize: number;
   setCurrentLevel: (index: number) => void;
+  setSelectedCategory: (category: CategoryId) => void;
   completeLevel: (index: number) => void;
   buyHint: () => boolean;
   buyHintPack: () => boolean;
@@ -84,6 +88,16 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       hintPackSize: HINT_PACK_SIZE,
       setCurrentLevel: (index: number) => {
         setState((prev) => ({ ...prev, currentLevel: Math.max(0, Math.min(index, totalLevels - 1)) }));
+      },
+      setSelectedCategory: (category: CategoryId) => {
+        setState((prev) => {
+          const firstInCategory = words.findIndex((w) => w.category === category);
+          return {
+            ...prev,
+            selectedCategory: category,
+            currentLevel: firstInCategory >= 0 ? firstInCategory : prev.currentLevel,
+          };
+        });
       },
       completeLevel: (index: number) => {
         setState((prev) => {

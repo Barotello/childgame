@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,8 +15,7 @@ export default function LibraryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, locale } = useI18n();
-  const { completedLevels } = useGameState();
-  const [activeCategory, setActiveCategory] = useState<CategoryId>('animals');
+  const { completedLevels, selectedCategory, setSelectedCategory } = useGameState();
 
   const wordIndexById = useMemo(() => {
     const map = new Map<string, number>();
@@ -24,7 +23,7 @@ export default function LibraryScreen() {
     return map;
   }, []);
 
-  const category = categories.find((c) => c.id === activeCategory) ?? categories[0];
+  const category = categories.find((c) => c.id === selectedCategory) ?? categories[0];
 
   return (
     <LinearGradient
@@ -41,11 +40,11 @@ export default function LibraryScreen() {
         style={styles.chipScroll}
       >
         {categories.map((cat) => {
-          const selected = cat.id === activeCategory;
+          const selected = cat.id === selectedCategory;
           return (
             <Pressable
               key={cat.id}
-              onPress={() => setActiveCategory(cat.id)}
+              onPress={() => setSelectedCategory(cat.id)}
               style={[
                 styles.chip,
                 { backgroundColor: colors.card, borderColor: colors.border },
