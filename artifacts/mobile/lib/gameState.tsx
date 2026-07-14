@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { type CategoryId } from '@/constants/library';
 import words from '@/constants/words';
 import { setSoundsMuted } from '@/lib/sounds';
+import { setSpeechMuted } from '@/lib/speech';
 
 const STORAGE_KEY = 'kelime-bulmaca:game-state:v1';
 const HINT_COST = 20;
@@ -47,6 +48,8 @@ type GameStateContextValue = PersistedState & {
   hintPackSize: number;
   setCurrentLevel: (index: number) => void;
   setSelectedCategory: (category: CategoryId) => void;
+  /** Select category and jump to a specific word index in one state update. */
+  playWordAt: (index: number, category: CategoryId) => void;
   completeLevel: (index: number) => void;
   buyHint: () => boolean;
   buyHintPack: () => boolean;
@@ -78,6 +81,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           }
           setState(merged);
           setSoundsMuted(merged.muted);
+          setSpeechMuted(merged.muted);
         }
       } catch {
         // Corrupt or unavailable storage: fall back to defaults silently.
@@ -129,6 +133,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
             currentLevel: nextLevel,
           };
         });
+      },
+      playWordAt: (index: number, category: CategoryId) => {
+        setState((prev) => ({
+          ...prev,
+          selectedCategory: category,
+          currentLevel: Math.max(0, Math.min(index, totalLevels - 1)),
+        }));
       },
       completeLevel: (index: number) => {
         setState((prev) => {
@@ -198,6 +209,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         setState((prev) => {
           const nextMuted = !prev.muted;
           setSoundsMuted(nextMuted);
+          setSpeechMuted(nextMuted);
           return { ...prev, muted: nextMuted };
         });
       },

@@ -19,6 +19,16 @@ export const LOCALE_FLAGS: Record<Locale, string> = {
   tr: '🇹🇷',
 };
 
+/** BCP-47 tags for expo-speech */
+export const LOCALE_SPEECH: Record<Locale, string> = {
+  en: 'en-US',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  it: 'it-IT',
+  de: 'de-DE',
+  tr: 'tr-TR',
+};
+
 const tr = {
   appTitle: 'Kelime\nBulmaca',
   play: 'Oyna',
@@ -27,9 +37,12 @@ const tr = {
   settings: 'Ayarlar',
   level: 'Seviye {current} / {total}',
   hint: 'İpucu',
+  skip: 'Pas',
   hintTokens: 'İpucu jetonun: {n}',
+  skipTokens: 'Pas jetonun: {n}',
   hintDesc:
     'Bir kelimede takılırsan ipucu kullanarak doğru harfi kutuya otomatik yerleştirebilirsin.',
+  skipDesc: 'Pas jetonu ile kelimeyi atlayıp bir sonrakine geçebilirsin. Her 15 yeni kelimede 3 pas jetonu kazanırsın.',
   coins: 'Coin',
   coinEarned: '+{n} Coin',
   soundEffects: 'Ses efektleri',
@@ -50,6 +63,19 @@ const tr = {
   categoryNumbers: 'Sayılar',
   categoryColors: 'Renkler',
   categoryFlags: 'Bayraklar',
+  startGame: 'Oyuna Başla',
+  brandKids: 'KIDS',
+  congrats: 'Tebrikler!',
+  categoryCompleteBody: 'Bu kategorideki tüm kelimeleri tamamladın! Harikasın!',
+  playAgain: 'Tekrar Oyna',
+  emptyCategoryBody: 'Bu kategoride kelime bulmacası yok.\nKitaplıkta başka bir kategori seç!',
+  dragHint: 'Harfi sürükle veya dokun',
+  hearWord: 'Dinle',
+  tutorialTitle: 'Nasıl oynanır?',
+  tutorialBody: 'Alttaki harfe dokun veya yuvalara sürükle. Doğru harf yerine oturur!',
+  tutorialGotIt: 'Anladım!',
+  selectWord: 'Bu kelimeyi oyna',
+  wordsProgress: '{done}/{total}',
 };
 
 const en = {
@@ -60,9 +86,12 @@ const en = {
   settings: 'Settings',
   level: 'Level {current} / {total}',
   hint: 'Hint',
+  skip: 'Skip',
   hintTokens: 'Hint tokens: {n}',
+  skipTokens: 'Skip tokens: {n}',
   hintDesc:
     'If you get stuck on a word, use a hint to place the correct letter automatically.',
+  skipDesc: 'Use a skip token to move to the next word. Earn 3 skip tokens every 15 new words.',
   coins: 'Coins',
   coinEarned: '+{n} Coins',
   soundEffects: 'Sound effects',
@@ -83,6 +112,19 @@ const en = {
   categoryNumbers: 'Numbers',
   categoryColors: 'Colors',
   categoryFlags: 'Flags',
+  startGame: 'Start Playing',
+  brandKids: 'KIDS',
+  congrats: 'Congratulations!',
+  categoryCompleteBody: 'You finished every word in this category! Awesome!',
+  playAgain: 'Play Again',
+  emptyCategoryBody: 'No word puzzles in this category.\nPick another category in the Library!',
+  dragHint: 'Drag or tap a letter',
+  hearWord: 'Listen',
+  tutorialTitle: 'How to play',
+  tutorialBody: 'Tap a letter below or drag it into a slot. The right letter sticks!',
+  tutorialGotIt: 'Got it!',
+  selectWord: 'Play this word',
+  wordsProgress: '{done}/{total}',
 };
 
 const fr = {
@@ -93,9 +135,12 @@ const fr = {
   settings: 'Paramètres',
   level: 'Niveau {current} / {total}',
   hint: 'Indice',
+  skip: 'Passer',
   hintTokens: "Jetons d'indice : {n}",
+  skipTokens: 'Jetons passer : {n}',
   hintDesc:
-    "Si tu bloques sur un mot, utilise un indice pour placer la bonne lettre automatiquement.",
+    "Si tu bloques sur un mot, utilise un indice pour placer la lettre correcte automatiquement.",
+  skipDesc: 'Utilise un jeton pour passer au mot suivant. Gagne 3 jetons tous les 15 nouveaux mots.',
   coins: 'Pièces',
   coinEarned: '+{n} pièces',
   soundEffects: 'Effets sonores',
@@ -116,6 +161,19 @@ const fr = {
   categoryNumbers: 'Nombres',
   categoryColors: 'Couleurs',
   categoryFlags: 'Drapeaux',
+  startGame: 'Commencer',
+  brandKids: 'KIDS',
+  congrats: 'Bravo !',
+  categoryCompleteBody: 'Tu as terminé tous les mots de cette catégorie !',
+  playAgain: 'Rejouer',
+  emptyCategoryBody: 'Pas de puzzle dans cette catégorie.\nChoisis-en une autre !',
+  dragHint: 'Glisse ou touche une lettre',
+  hearWord: 'Écouter',
+  tutorialTitle: 'Comment jouer',
+  tutorialBody: 'Touche une lettre ou glisse-la dans une case. La bonne lettre reste !',
+  tutorialGotIt: "C'est parti !",
+  selectWord: 'Jouer ce mot',
+  wordsProgress: '{done}/{total}',
 };
 
 const es = {
@@ -126,9 +184,12 @@ const es = {
   settings: 'Ajustes',
   level: 'Nivel {current} / {total}',
   hint: 'Pista',
+  skip: 'Saltar',
   hintTokens: 'Pistas: {n}',
+  skipTokens: 'Saltos: {n}',
   hintDesc:
     'Si te atascas en una palabra, usa una pista para colocar la letra correcta automáticamente.',
+  skipDesc: 'Usa un salto para pasar a la siguiente palabra. Gana 3 saltos cada 15 palabras nuevas.',
   coins: 'Monedas',
   coinEarned: '+{n} monedas',
   soundEffects: 'Efectos de sonido',
@@ -149,6 +210,19 @@ const es = {
   categoryNumbers: 'Números',
   categoryColors: 'Colores',
   categoryFlags: 'Banderas',
+  startGame: 'Empezar',
+  brandKids: 'KIDS',
+  congrats: '¡Felicidades!',
+  categoryCompleteBody: '¡Completaste todas las palabras de esta categoría!',
+  playAgain: 'Jugar de nuevo',
+  emptyCategoryBody: 'No hay puzzles en esta categoría.\n¡Elige otra en la biblioteca!',
+  dragHint: 'Arrastra o toca una letra',
+  hearWord: 'Escuchar',
+  tutorialTitle: 'Cómo jugar',
+  tutorialBody: 'Toca una letra o arrástrala a un hueco. ¡La letra correcta se queda!',
+  tutorialGotIt: '¡Entendido!',
+  selectWord: 'Jugar esta palabra',
+  wordsProgress: '{done}/{total}',
 };
 
 const it = {
@@ -158,10 +232,13 @@ const it = {
   store: 'Negozio',
   settings: 'Impostazioni',
   level: 'Livello {current} / {total}',
-  hint: 'Suggerimento',
+  hint: 'Aiuto',
+  skip: 'Salta',
   hintTokens: 'Suggerimenti: {n}',
+  skipTokens: 'Salti: {n}',
   hintDesc:
     'Se resti bloccato su una parola, usa un suggerimento per posizionare la lettera corretta automaticamente.',
+  skipDesc: 'Usa un gettone per passare alla parola successiva. Guadagni 3 gettoni ogni 15 parole nuove.',
   coins: 'Monete',
   coinEarned: '+{n} monete',
   soundEffects: 'Effetti sonori',
@@ -182,6 +259,19 @@ const it = {
   categoryNumbers: 'Numeri',
   categoryColors: 'Colori',
   categoryFlags: 'Bandiere',
+  startGame: 'Inizia',
+  brandKids: 'KIDS',
+  congrats: 'Complimenti!',
+  categoryCompleteBody: 'Hai completato tutte le parole di questa categoria!',
+  playAgain: 'Rigioca',
+  emptyCategoryBody: 'Nessun puzzle in questa categoria.\nScegline un’altra!',
+  dragHint: 'Trascina o tocca una lettera',
+  hearWord: 'Ascolta',
+  tutorialTitle: 'Come si gioca',
+  tutorialBody: 'Tocca una lettera o trascinala nello spazio. Quella giusta resta!',
+  tutorialGotIt: 'Ho capito!',
+  selectWord: 'Gioca questa parola',
+  wordsProgress: '{done}/{total}',
 };
 
 const de = {
@@ -191,10 +281,13 @@ const de = {
   store: 'Geschäft',
   settings: 'Einstellungen',
   level: 'Level {current} / {total}',
-  hint: 'Hinweis',
+  hint: 'Tipp',
+  skip: 'Skip',
   hintTokens: 'Hinweise: {n}',
+  skipTokens: 'Skip-Jetons: {n}',
   hintDesc:
     'Wenn du bei einem Wort nicht weiterkommst, verwende einen Hinweis, um den richtigen Buchstaben automatisch zu platzieren.',
+  skipDesc: 'Mit einem Skip-Jeton gehst du zum nächsten Wort. Alle 15 neuen Wörter erhältst du 3 Jetons.',
   coins: 'Münzen',
   coinEarned: '+{n} Münzen',
   soundEffects: 'Soundeffekte',
@@ -215,6 +308,19 @@ const de = {
   categoryNumbers: 'Zahlen',
   categoryColors: 'Farben',
   categoryFlags: 'Flaggen',
+  startGame: 'Spielen',
+  brandKids: 'KIDS',
+  congrats: 'Glückwunsch!',
+  categoryCompleteBody: 'Du hast alle Wörter in dieser Kategorie geschafft!',
+  playAgain: 'Nochmal',
+  emptyCategoryBody: 'Keine Rätsel in dieser Kategorie.\nWähle eine andere in der Bibliothek!',
+  dragHint: 'Ziehen oder tippen',
+  hearWord: 'Hören',
+  tutorialTitle: 'So geht’s',
+  tutorialBody: 'Tippe einen Buchstaben an oder ziehe ihn in ein Feld. Der richtige bleibt!',
+  tutorialGotIt: 'Verstanden!',
+  selectWord: 'Dieses Wort spielen',
+  wordsProgress: '{done}/{total}',
 };
 
 export const translations = { en, fr, es, it, de, tr } as const;

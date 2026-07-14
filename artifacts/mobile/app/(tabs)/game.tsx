@@ -1,14 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import WordRound from '@/components/WordRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
-import categories from '@/constants/library';
+import TutorialOverlay from '@/components/TutorialOverlay';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
 import { playCelebrateSound } from '@/lib/sounds';
@@ -16,6 +17,7 @@ import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
 
 const COINS_PER_LEVEL = 15;
+const TUTORIAL_KEY = 'kelime-bulmaca:tutorial-seen:v1';
 
 export default function PlayScreen() {
   const colors = useColors();
@@ -24,21 +26,28 @@ export default function PlayScreen() {
   const {
     currentLevel,
     totalLevels,
-    hintTokens,
     selectedCategory,
-    consumeHintToken,
     completeLevel,
     setCurrentLevel,
-    setSelectedCategory,
   } = useGameState();
 
   const { locale } = useI18n();
   const [celebrating, setCelebrating] = useState(false);
   const [categoryComplete, setCategoryComplete] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     setCategoryComplete(false);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    // Show tutorial every time the play screen is mounted
+    setShowTutorial(true);
+  }, []);
+
+  const dismissTutorial = () => {
+    setShowTutorial(false);
+  };
 
   const currentWord = words[currentLevel];
 
@@ -59,9 +68,6 @@ export default function PlayScreen() {
     width: `${progressValue.value * 100}%`,
   }));
 
-  // Always reflect the latest level/category in a ref so the completion
-  // timeout below reads fresh values instead of a stale render closure —
-  // this is what previously caused the next word to sometimes not appear.
   const latestRef = useRef({ currentLevel, selectedCategory });
   latestRef.current = { currentLevel, selectedCategory };
   const completingRef = useRef(false);
@@ -70,14 +76,15 @@ export default function PlayScreen() {
     completingRef.current = false;
   }, [currentWord?.id, selectedCategory]);
 
-  const handleComplete = () => {
+  const advanceToNext = (opts?: { celebrate?: boolean; award?: boolean }) => {
     if (completingRef.current) return;
     completingRef.current = true;
 
-    completeLevel(latestRef.current.currentLevel);
-    setCelebrating(true);
-    playCelebrateSound();
-    setTimeout(() => {
+    if (opts?.award !== false) {
+      completeLevel(latestRef.current.currentLevel);
+    }
+
+    const goNext = () => {
       setCelebrating(false);
       const { currentLevel: level, selectedCategory: category } = latestRef.current;
       const wordsInCategory = words.filter((w) => w.category === category);
@@ -89,30 +96,40 @@ export default function PlayScreen() {
       } else {
         setCategoryComplete(true);
       }
-    }, 1100);
+      completingRef.current = false;
+    };
+
+    if (opts?.celebrate !== false) {
+      setCelebrating(true);
+      playCelebrateSound();
+      setTimeout(goNext, 1100);
+    } else {
+      goNext();
+    }
   };
 
+  const handleComplete = () => advanceToNext({ celebrate: true, award: true });
+  const handleSkip = () => advanceToNext({ celebrate: false, award: false });
 
+  const roundKey =
+    hasCategoryWords && currentWord?.category === selectedCategory
+      ? `${currentWord.id}-${currentLevel}-${locale}`
+      : 'empty';
 
-  const roundKey = hasCategoryWords && currentWord?.category === selectedCategory
-    ? `${currentWord.id}-${currentLevel}-${locale}`
-    : 'empty';
+  // Bottom padding to clear the tab bar (88 height + 16 gap)
+  const bottomPad = Math.max(insets.bottom, 12) + 104;
 
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 }]}
+      style={[styles.root, { paddingTop: insets.top + 8, paddingBottom: bottomPad }]}
     >
       <GameHeader onBack={() => router.navigate('/library')} />
 
       <View style={styles.levelRow}>
         <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
           <Animated.View
-            style={[
-              styles.progressFill,
-              { backgroundColor: colors.primary },
-              progressStyle
-            ]}
+            style={[styles.progressFill, { backgroundColor: colors.primary }, progressStyle]}
           />
           <Text style={[styles.progressLabel, { color: colors.foreground }]}>
             {hasCategoryWords
@@ -122,48 +139,63 @@ export default function PlayScreen() {
         </View>
       </View>
 
-
-
       {categoryComplete ? (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="award" size={56} color="#FFC93C" />
           <Text style={[styles.emptyTitle, { color: colors.foreground, textAlign: 'center', fontSize: 22 }]}>
-            Tebrikler!
+            {t('congrats')}
           </Text>
           <Text style={[styles.emptyBody, { color: colors.mutedForeground, marginTop: 4, marginBottom: 20 }]}>
-            Bu kategorideki tüm kelimeleri tamamladın! Harikasın!
+            {t('categoryCompleteBody')}
           </Text>
-          <Pressable 
-             style={[styles.hintButton, { backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 14 }]}
-             onPress={() => {
-                const first = words.findIndex(w => w.category === selectedCategory);
+          <View style={{ flexDirection: 'column', gap: 12, width: '100%', paddingHorizontal: 16 }}>
+            <Pressable
+              style={[styles.hintButton, { backgroundColor: colors.primary, width: '100%', paddingVertical: 16 }]}
+              onPress={() => {
+                const first = words.findIndex((w) => w.category === selectedCategory);
                 if (first >= 0) setCurrentLevel(first);
                 setCategoryComplete(false);
-             }}
-          >
-            <Feather name="rotate-ccw" size={18} color="#FFFFFF" />
-            <Text style={[styles.hintText, { color: '#FFFFFF' }]}>Tekrar Oyna</Text>
-          </Pressable>
+              }}
+            >
+              <Feather name="rotate-ccw" size={24} color="#FFFFFF" />
+              <Text style={[styles.hintText, { color: '#FFFFFF', fontSize: 18 }]}>{t('playAgain')}</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.hintButton, { backgroundColor: '#56A8DF', width: '100%', paddingVertical: 16 }]}
+              onPress={() => {
+                router.navigate('/library');
+              }}
+            >
+              <Feather name="book-open" size={24} color="#FFFFFF" />
+              <Text style={[styles.hintText, { color: '#FFFFFF', fontSize: 18 }]}>{t('library')}</Text>
+            </Pressable>
+          </View>
         </View>
       ) : hasCategoryWords && currentWord?.category === selectedCategory ? (
-        <WordRound
-          key={roundKey}
-          word={currentWord}
-          onComplete={handleComplete}
-        />
+        <WordRound key={roundKey} word={currentWord} onComplete={handleComplete} onSkip={handleSkip} />
       ) : (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="book-open" size={40} color={colors.secondary} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            {t('category' + selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) as any)}
+            {t(
+              `category${selectedCategory.charAt(0).toUpperCase()}${selectedCategory.slice(1)}` as
+                | 'categoryAnimals'
+                | 'categoryFruits'
+                | 'categoryNumbers'
+                | 'categoryColors'
+                | 'categoryFlags',
+            )}
           </Text>
-          <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>
-            Bu kategoride kelime bulmacası yok.{'\n'}Kitaplıkta bu kategoriyi keşfet!
-          </Text>
+          <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>{t('emptyCategoryBody')}</Text>
         </View>
       )}
 
-      {celebrating ? <Celebration word={currentWord} coinsEarned={COINS_PER_LEVEL} /> : null}
+      {celebrating && currentWord ? (
+        <Celebration word={currentWord} coinsEarned={COINS_PER_LEVEL} />
+      ) : null}
+
+      <TutorialOverlay visible={showTutorial} onDismiss={dismissTutorial} />
     </LinearGradient>
   );
 }
@@ -171,6 +203,7 @@ export default function PlayScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    overflow: 'visible',
   },
   levelRow: {
     flexDirection: 'row',
@@ -198,7 +231,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-
   emptyCard: {
     flex: 1,
     marginHorizontal: 20,

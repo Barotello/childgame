@@ -3,13 +3,13 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
   withSequence,
-  Easing 
+  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -23,7 +23,7 @@ const PlayfulText = ({ text, baseSize = 48 }: { text: string; baseSize?: number 
         if (char === ' ') return <View key={i} style={{ width: baseSize * 0.3 }} />;
         const color = colors[i % colors.length];
         const rotate = (i % 2 === 0 ? 1 : -1) * (8 + (i % 3) * 4) + 'deg';
-        const translateY = (i % 2 === 0 ? -3 : 3);
+        const translateY = i % 2 === 0 ? -3 : 3;
         return (
           <Text
             key={i}
@@ -54,15 +54,15 @@ export default function WelcomeScreen() {
     bounceValue.value = withRepeat(
       withSequence(
         withTiming(-15, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
-      true
+      true,
     );
   }, []);
 
   const titleAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: bounceValue.value }]
+    transform: [{ translateY: bounceValue.value }],
   }));
 
   return (
@@ -73,40 +73,50 @@ export default function WelcomeScreen() {
       <View style={styles.content}>
         <Animated.View style={[styles.titleContainer, titleAnimatedStyle]}>
           <View style={styles.childImageContainer}>
-            <Image 
-              source={require('../assets/images/child.png')} 
-              style={styles.childImage} 
-              contentFit="cover" 
+            <Image
+              source={require('../assets/images/child.png')}
+              style={styles.childImage}
+              contentFit="cover"
             />
           </View>
           <View style={{ marginTop: 12 }}>
-            <PlayfulText text="Word" baseSize={56} />
-            <PlayfulText text="Builder" baseSize={52} />
+            <PlayfulText text="Word" baseSize={52} />
+            <PlayfulText text="Builder" baseSize={48} />
           </View>
-          <Text style={styles.subtitle}>KIDS</Text>
+          <Text style={styles.subtitle}>{t('brandKids')}</Text>
         </Animated.View>
 
-        <View style={styles.decorations}>
-          <Image source={require('../assets/images/word-elma.png')} style={[styles.decorImage, { left: 10, top: 40, transform: [{ rotate: '-15deg' }] }]} contentFit="contain" />
-          <Image source={require('../assets/images/word-fil.png')} style={[styles.decorImage, { right: 10, top: 80, transform: [{ rotate: '15deg' }] }]} contentFit="contain" />
-          <Image source={require('../assets/images/word-inek.png')} style={[styles.decorImage, { left: 20, bottom: 80, transform: [{ rotate: '-25deg' }] }]} contentFit="contain" />
-          <Image source={require('../assets/images/word-ari.png')} style={[styles.decorImage, { right: 20, bottom: 30, transform: [{ rotate: '20deg' }] }]} contentFit="contain" />
+        <View style={styles.decorations} pointerEvents="none">
+          <Image
+            source={require('../assets/images/word-elma.png')}
+            style={[styles.decorImage, { left: 10, top: 40, transform: [{ rotate: '-15deg' }] }]}
+            contentFit="contain"
+          />
+          <Image
+            source={require('../assets/images/word-fil.png')}
+            style={[styles.decorImage, { right: 10, top: 80, transform: [{ rotate: '15deg' }] }]}
+            contentFit="contain"
+          />
+          <Image
+            source={require('../assets/images/word-inek.png')}
+            style={[styles.decorImage, { left: 20, bottom: 80, transform: [{ rotate: '-25deg' }] }]}
+            contentFit="contain"
+          />
+          <Image
+            source={require('../assets/images/word-ari.png')}
+            style={[styles.decorImage, { right: 20, bottom: 30, transform: [{ rotate: '20deg' }] }]}
+            contentFit="contain"
+          />
         </View>
 
-        <Pressable 
-          style={({ pressed }) => [
-            styles.playButton,
-            pressed && { transform: [{ scale: 0.95 }] }
-          ]}
-          onPress={() => router.replace('/(tabs)/library')}
+        <Pressable
+          style={({ pressed }) => [styles.playButton, pressed && { transform: [{ scale: 0.95 }] }]}
+          onPress={() => router.replace('/(tabs)/game')}
         >
-          <LinearGradient
-            colors={['#06D6A0', '#04A77B']}
-            style={styles.playButtonGradient}
-          >
+          <LinearGradient colors={['#06D6A0', '#04A77B']} style={styles.playButtonGradient}>
             <View style={styles.jellyHighlight} />
             <Feather name="play" size={32} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.playText}>Oyuna Başla</Text>
+            <Text style={styles.playText}>{t('startGame')}</Text>
           </LinearGradient>
         </Pressable>
       </View>
@@ -130,9 +140,9 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   childImageContainer: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
     shadowColor: '#000',
@@ -148,7 +158,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   subtitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#FFFFFF',
     backgroundColor: '#EF476F',
@@ -170,8 +180,8 @@ const styles = StyleSheet.create({
   },
   decorImage: {
     position: 'absolute',
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
     opacity: 0.85,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -192,7 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 18,
     borderRadius: 40,
     borderWidth: 4,
     borderColor: '#B5F1E2',
@@ -209,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   playText: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
     color: '#FFFFFF',
   },

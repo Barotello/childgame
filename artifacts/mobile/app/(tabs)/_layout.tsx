@@ -12,6 +12,7 @@ type TabDescriptor = {
   options: {
     title?: string;
     tabBarIcon?: (props: { color: string; size: number; focused: boolean }) => React.ReactNode;
+    href?: string | null;
   };
   navigation: any;
 };
@@ -21,7 +22,9 @@ type TabBarProps = {
   descriptors: Record<string, TabDescriptor>;
   navigation: {
     navigate: (name: string, params?: object) => void;
-    emit: (event: { type: string; target: string; canPreventDefault: boolean }) => { defaultPrevented: boolean };
+    emit: (event: { type: string; target: string; canPreventDefault: boolean }) => {
+      defaultPrevented: boolean;
+    };
   };
 };
 
@@ -34,6 +37,9 @@ const TAB_COLORS: Record<string, { bg: string; border: string }> = {
 
 function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const currentRoute = state.routes[state.index]?.name;
+
+
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 12 }]}>
@@ -41,9 +47,9 @@ function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
         const colorData = TAB_COLORS[route.name] || TAB_COLORS.game;
-        
+
         const icon = options.tabBarIcon
-          ? options.tabBarIcon({ focused: isFocused, color: '#FFFFFF', size: 28 })
+          ? options.tabBarIcon({ focused: isFocused, color: '#FFFFFF', size: 24 })
           : null;
 
         const onPress = () => {
@@ -59,21 +65,36 @@ function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
         };
 
         return (
-          <Pressable key={route.key} onPress={onPress} style={styles.tabButton}>
-            <View 
+          <Pressable
+            key={route.key}
+            onPress={onPress}
+            style={styles.tabButton}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.title}
+          >
+            <View
               style={[
-                styles.jellyButton, 
-                { 
-                  backgroundColor: colorData.bg, 
+                styles.jellyButton,
+                {
+                  backgroundColor: colorData.bg,
                   borderColor: colorData.border,
-                  transform: [{ scale: isFocused ? 1.15 : 0.9 }],
-                  opacity: isFocused ? 1 : 0.7,
-                }
+                  transform: [{ scale: isFocused ? 1.08 : 0.92 }],
+                  opacity: isFocused ? 1 : 0.72,
+                },
               ]}
             >
               <View style={styles.jellyHighlight} />
               {icon}
             </View>
+            {options.title ? (
+              <Text
+                style={[styles.tabLabel, { opacity: isFocused ? 1 : 0.65 }]}
+                numberOfLines={1}
+              >
+                {options.title}
+              </Text>
+            ) : null}
           </Pressable>
         );
       })}
@@ -129,17 +150,17 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    height: 86,
+    left: 16,
+    right: 16,
+    height: 88,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 43,
+    borderRadius: 44,
     borderWidth: 4,
     borderColor: '#F0E6FF',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     shadowColor: '#3B2F63',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
@@ -150,13 +171,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 2,
   },
   jellyButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 18,
     borderWidth: 2,
-    borderBottomWidth: 6,
+    borderBottomWidth: 5,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -167,11 +189,16 @@ const styles = StyleSheet.create({
   },
   jellyHighlight: {
     position: 'absolute',
-    top: 4,
+    top: 3,
     left: '15%',
     right: '15%',
-    height: 10,
+    height: 8,
     backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: 5,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#3B2F63',
   },
 });

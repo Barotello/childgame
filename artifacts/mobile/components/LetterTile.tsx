@@ -12,7 +12,8 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 
-export const DEFAULT_TILE_SIZE = 56;
+export const DEFAULT_TILE_SIZE = 52;
+export const MIN_TILE_SIZE = 44;
 
 export type DropResult = { correct: boolean; dx: number; dy: number };
 
@@ -22,14 +23,24 @@ type LetterTileProps = {
   locked: boolean;
   size?: number;
   onAttemptDrop: (letter: string, centerX: number, centerY: number) => DropResult;
+  /** Tap places letter into the next matching empty slot (no drag required). */
+  onTapPlace?: (letter: string) => boolean;
 };
 
-export default function LetterTile({ letter, color, locked, size = DEFAULT_TILE_SIZE, onAttemptDrop }: LetterTileProps) {
+export default function LetterTile({
+  letter,
+  color,
+  locked,
+  size = DEFAULT_TILE_SIZE,
+  onAttemptDrop,
+  onTapPlace,
+}: LetterTileProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
   const lockedSV = useSharedValue(locked);
   const viewRef = useRef<Animated.View>(null);
+  const didPan = useSharedValue(false);
 
   useEffect(() => {
     lockedSV.value = locked;
@@ -41,59 +52,92 @@ export default function LetterTile({ letter, color, locked, size = DEFAULT_TILE_
     }
   };
 
-  const finishDrop = () => {
-    const node = viewRef.current as unknown as {
-      measure?: (
-        callback: (x: number, y: number, width: number, height: number, pageX: number, pageY: number) => void,
-      ) => void;
-    };
+  const applyCorrect = (dx: number, dy: number) => {
+    translateX.value = withSpring(translateX.value + dx, { damping: 12 });
+    translateY.value = withSpring(translateY.value + dy, { damping: 12 });
+    scale.value = withSequence(withTiming(1.3, { duration: 120 }), withSpring(1, { damping: 8 }));
+    playCorrectSound();
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  };
 
-    node?.measure?.((_x, _y, width, height, pageX, pageY) => {
-      const centerX = pageX + width / 2;
-      const centerY = pageY + height / 2;
-      const result = onAttemptDrop(letter, centerX, centerY);
+  const applyWrong = () => {
+    translateX.value = withSequence(
+      withTiming(-12, { duration: 50 }),
+      withTiming(12, { duration: 50 }),
+      withTiming(-12, { duration: 50 }),
+      withTiming(12, { duration: 50 }),
+      withSpring(0),
+    );
+    translateY.value = withSpring(0);
+    playWrongSound();
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
 
-      if (result.correct) {
-        translateX.value = withSpring(translateX.value + result.dx, { damping: 12 });
-        translateY.value = withSpring(translateY.value + result.dy, { damping: 12 });
-        scale.value = withSequence(withTiming(1.3, { duration: 120 }), withSpring(1, { damping: 8 }));
-        playCorrectSound();
-        if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      } else {
-        translateX.value = withSequence(
-          withTiming(-12, { duration: 50 }),
-          withTiming(12, { duration: 50 }),
-          withTiming(-12, { duration: 50 }),
-          withTiming(12, { duration: 50 }),
-          withSpring(0)
-        );
-        translateY.value = withSpring(0);
-        playWrongSound();
-        if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        }
+  const finishDrop = (absoluteX: number, absoluteY: number) => {
+    const result = onAttemptDrop(letter, absoluteX, absoluteY);
+
+    if (result.correct) {
+      applyCorrect(result.dx, result.dy);
+    } else {
+      applyWrong();
+    }
+  };
+
+  const handleTap = () => {
+    if (locked || !onTapPlace) return;
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    const ok = onTapPlace(letter);
+    if (ok) {
+      scale.value = withSequence(withTiming(1.25, { duration: 100 }), withSpring(1, { damping: 8 }));
+      playCorrectSound();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-    });
+    } else {
+      applyWrong();
+    }
   };
 
   const pan = Gesture.Pan()
     .onStart(() => {
       if (lockedSV.value) return;
+      didPan.value = false;
       scale.value = withSpring(1.12);
       runOnJS(handleGrab)();
     })
     .onChange((event) => {
       if (lockedSV.value) return;
+      if (Math.abs(event.changeX) + Math.abs(event.changeY) > 0.5) {
+        didPan.value = true;
+      }
       translateX.value += event.changeX;
       translateY.value += event.changeY;
     })
-    .onEnd(() => {
+    .onEnd((event) => {
       if (lockedSV.value) return;
       scale.value = withSpring(1);
-      runOnJS(finishDrop)();
+      if (didPan.value) {
+        runOnJS(finishDrop)(event.absoluteX, event.absoluteY);
+      } else {
+        // Treat near-stationary pan end as tap fallback
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+        runOnJS(handleTap)();
+      }
     });
+
+  const tap = Gesture.Tap().onEnd(() => {
+    if (lockedSV.value) return;
+    runOnJS(handleTap)();
+  });
+
+  const gesture = Gesture.Exclusive(pan, tap);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -101,24 +145,30 @@ export default function LetterTile({ letter, color, locked, size = DEFAULT_TILE_
       { translateY: translateY.value },
       { scale: scale.value },
     ],
-    zIndex: lockedSV.value ? 1 : 20,
+    zIndex: didPan.value ? 999 : (lockedSV.value ? 1 : 20),
+    elevation: didPan.value ? 100 : (lockedSV.value ? 1 : 4),
+    opacity: lockedSV.value ? 0.35 : 1,
   }));
 
   return (
-    <GestureDetector gesture={pan}>
+    <GestureDetector gesture={gesture}>
       <Animated.View
         ref={viewRef}
         style={[
-          styles.tile, 
-          { 
+          styles.tile,
+          {
             backgroundColor: locked ? '#4CD787' : color,
             width: size,
             height: size,
             borderRadius: size / 2,
-          }, 
-          animatedStyle
+            minWidth: MIN_TILE_SIZE,
+            minHeight: MIN_TILE_SIZE,
+          },
+          animatedStyle,
         ]}
         pointerEvents={locked ? 'none' : 'auto'}
+        accessibilityRole="button"
+        accessibilityLabel={letter}
       >
         <Text style={[styles.letter, { fontSize: size * 0.45 }]}>{letter}</Text>
       </Animated.View>
@@ -134,7 +184,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 4,
   },
   letter: {
     fontWeight: '800',

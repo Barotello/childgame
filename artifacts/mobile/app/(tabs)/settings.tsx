@@ -1,10 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import GameHeader from '@/components/GameHeader';
-import { LOCALE_FLAGS, LOCALE_LABELS, type Locale } from '@/constants/translations';
+import { LOCALE_FLAGS, LOCALE_LABELS } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
@@ -18,12 +18,12 @@ export default function SettingsScreen() {
   return (
     <LinearGradient
       colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 76 }]}
+      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 100 }]}
     >
       <GameHeader />
       <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('settings')}</Text>
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <Feather name="globe" size={22} color={colors.secondary} />
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     gap: 16,
+    paddingBottom: 20,
   },
   card: {
     borderRadius: 22,
@@ -112,7 +113,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderTopWidth: 1,
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
