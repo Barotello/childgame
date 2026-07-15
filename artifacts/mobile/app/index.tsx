@@ -9,11 +9,49 @@ import Animated, {
   withRepeat,
   withTiming,
   withSequence,
+  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useI18n } from '@/lib/i18n';
+
+function useFloatAnim(delay = 0, amplitude = 12, duration = 1800) {
+  const val = useSharedValue(0);
+  useEffect(() => {
+    val.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(-amplitude, { duration, easing: Easing.inOut(Easing.sin) }),
+          withTiming(0, { duration, easing: Easing.inOut(Easing.sin) }),
+        ),
+        -1,
+        true,
+      ),
+    );
+  }, []);
+  return val;
+}
+
+function useWiggleAnim(delay = 0, duration = 2200) {
+  const val = useSharedValue(0);
+  useEffect(() => {
+    val.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: duration * 0.25, easing: Easing.inOut(Easing.ease) }),
+          withTiming(-1, { duration: duration * 0.5, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0, { duration: duration * 0.25, easing: Easing.inOut(Easing.ease) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+  }, []);
+  return val;
+}
 
 const PlayfulText = ({ text, baseSize = 48 }: { text: string; baseSize?: number }) => {
   const colors = ['#EF476F', '#118AB2', '#FFD166', '#06D6A0', '#00B4D8', '#B57BFF'];
@@ -50,6 +88,13 @@ export default function WelcomeScreen() {
   const { t } = useI18n();
   const bounceValue = useSharedValue(0);
 
+  // Animal float animations — staggered so they move independently
+  const elmaFloat = useFloatAnim(0, 14, 1700);
+  const filFloat  = useFloatAnim(400, 10, 2000);
+  const inekFloat = useFloatAnim(200, 12, 1900);
+  const ariFloat  = useFloatAnim(600, 16, 1600);
+  const ariWiggle = useWiggleAnim(600, 1800);
+
   useEffect(() => {
     bounceValue.value = withRepeat(
       withSequence(
@@ -64,6 +109,11 @@ export default function WelcomeScreen() {
   const titleAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: bounceValue.value }],
   }));
+
+  const elmaStyle  = useAnimatedStyle(() => ({ transform: [{ rotate: '-15deg' }, { translateY: elmaFloat.value }] }));
+  const filStyle   = useAnimatedStyle(() => ({ transform: [{ rotate: '15deg'  }, { translateY: filFloat.value  }] }));
+  const inekStyle  = useAnimatedStyle(() => ({ transform: [{ rotate: '-25deg' }, { translateY: inekFloat.value }] }));
+  const ariStyle   = useAnimatedStyle(() => ({ transform: [{ rotate: '20deg'  }, { translateY: ariFloat.value  }, { rotateZ: `${ariWiggle.value * 12}deg` }] }));
 
   return (
     <LinearGradient
@@ -87,25 +137,21 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <View style={styles.decorations} pointerEvents="none">
-          <Image
+          <Animated.Image
             source={require('../assets/images/word-elma.png')}
-            style={[styles.decorImage, { left: 10, top: 40, transform: [{ rotate: '-15deg' }] }]}
-            contentFit="contain"
+            style={[styles.decorImage, { left: 0, top: 30 }, elmaStyle]}
           />
-          <Image
+          <Animated.Image
             source={require('../assets/images/word-fil.png')}
-            style={[styles.decorImage, { right: 10, top: 80, transform: [{ rotate: '15deg' }] }]}
-            contentFit="contain"
+            style={[styles.decorImage, { right: 0, top: 70 }, filStyle]}
           />
-          <Image
+          <Animated.Image
             source={require('../assets/images/word-inek.png')}
-            style={[styles.decorImage, { left: 20, bottom: 80, transform: [{ rotate: '-25deg' }] }]}
-            contentFit="contain"
+            style={[styles.decorImage, { left: 0, bottom: 90 }, inekStyle]}
           />
-          <Image
+          <Animated.Image
             source={require('../assets/images/word-ari.png')}
-            style={[styles.decorImage, { right: 20, bottom: 30, transform: [{ rotate: '20deg' }] }]}
-            contentFit="contain"
+            style={[styles.decorImage, { right: 0, bottom: 20 }, ariStyle]}
           />
         </View>
 
@@ -180,13 +226,13 @@ const styles = StyleSheet.create({
   },
   decorImage: {
     position: 'absolute',
-    width: 90,
-    height: 90,
-    opacity: 0.85,
+    width: 120,
+    height: 120,
+    opacity: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   playButton: {
     width: '100%',
