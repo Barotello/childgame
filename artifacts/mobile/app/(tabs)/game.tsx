@@ -189,7 +189,8 @@ export default function PlayScreen() {
                 | 'categoryFruits'
                 | 'categoryNumbers'
                 | 'categoryColors'
-                | 'categoryFlags',
+                | 'categoryFlags'
+                | 'categoryBody',
             )}
           </Text>
           <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>{t('emptyCategoryBody')}</Text>

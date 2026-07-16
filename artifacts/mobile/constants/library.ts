@@ -12,7 +12,7 @@
 import type { Locale } from './translations';
 import words from './words';
 
-export type CategoryId = 'animals' | 'fruits' | 'numbers' | 'colors' | 'flags';
+export type CategoryId = 'animals' | 'fruits' | 'numbers' | 'colors' | 'flags' | 'body';
 
 export type LibraryItem = {
   id: string;
@@ -28,7 +28,7 @@ export type LibraryItem = {
 export type Category = {
   id: CategoryId;
   emoji: string;
-  titleKey: 'categoryAnimals' | 'categoryFruits' | 'categoryNumbers' | 'categoryColors' | 'categoryFlags';
+  titleKey: 'categoryAnimals' | 'categoryFruits' | 'categoryNumbers' | 'categoryColors' | 'categoryFlags' | 'categoryBody';
   items: LibraryItem[];
 };
 
@@ -89,6 +89,17 @@ const categories: Category[] = [
       id: w.id,
       wordId: w.id,
       image: w.image,
+      emoji: w.emoji,
+      names: w.spellings,
+    })),
+  },
+  {
+    id: 'body',
+    emoji: '🫀',
+    titleKey: 'categoryBody',
+    items: words.filter((w) => w.category === 'body').map((w) => ({
+      id: w.id,
+      wordId: w.id,
       emoji: w.emoji,
       names: w.spellings,
     })),

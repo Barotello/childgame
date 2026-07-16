@@ -406,6 +406,68 @@ const words: WordItem[] = [
     category: 'flags',
     emoji: '🇨🇱',
   },
+
+  // ─── Vücudumuz / Body ────────────────────────────────────────────────────────
+  {
+    id: 'body_goz',
+    spellings: { tr: 'göz', en: 'eye', fr: 'œil', es: 'ojo', it: 'occhio', de: 'auge' },
+    category: 'body',
+    emoji: '👁️',
+  },
+  {
+    id: 'body_el',
+    spellings: { tr: 'el', en: 'hand', fr: 'main', es: 'mano', it: 'mano', de: 'hand' },
+    category: 'body',
+    emoji: '✋',
+  },
+  {
+    id: 'body_dis',
+    spellings: { tr: 'diş', en: 'tooth', fr: 'dent', es: 'diente', it: 'dente', de: 'zahn' },
+    category: 'body',
+    emoji: '🦷',
+  },
+  {
+    id: 'body_kulak',
+    spellings: { tr: 'kulak', en: 'ear', fr: 'oreille', es: 'oreja', it: 'orecchio', de: 'ohr' },
+    category: 'body',
+    emoji: '👂',
+  },
+  {
+    id: 'body_burun',
+    spellings: { tr: 'burun', en: 'nose', fr: 'nez', es: 'nariz', it: 'naso', de: 'nase' },
+    category: 'body',
+    emoji: '👃',
+  },
+  {
+    id: 'body_kalp',
+    spellings: { tr: 'kalp', en: 'heart', fr: 'cœur', es: 'corazón', it: 'cuore', de: 'herz' },
+    category: 'body',
+    emoji: '❤️',
+  },
+  {
+    id: 'body_beyin',
+    spellings: { tr: 'beyin', en: 'brain', fr: 'cerveau', es: 'cerebro', it: 'cervello', de: 'gehirn' },
+    category: 'body',
+    emoji: '🧠',
+  },
+  {
+    id: 'body_ayak',
+    spellings: { tr: 'ayak', en: 'foot', fr: 'pied', es: 'pie', it: 'piede', de: 'fuß' },
+    category: 'body',
+    emoji: '🦶',
+  },
+  {
+    id: 'body_dil',
+    spellings: { tr: 'dil', en: 'tongue', fr: 'langue', es: 'lengua', it: 'lingua', de: 'zunge' },
+    category: 'body',
+    emoji: '👅',
+  },
+  {
+    id: 'body_sac',
+    spellings: { tr: 'saç', en: 'hair', fr: 'cheveux', es: 'pelo', it: 'capelli', de: 'haar' },
+    category: 'body',
+    emoji: '🦱',
+  },
 ];
 
 export default words;

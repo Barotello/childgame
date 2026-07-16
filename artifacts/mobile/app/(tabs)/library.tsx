@@ -18,6 +18,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; border: string }> = {
   numbers: { bg: '#56A8DF', border: '#327EBC' },
   colors: { bg: '#F14A6F', border: '#C6244A' },
   flags: { bg: '#9B72CF', border: '#7B58A6' },
+  body: { bg: '#FF6B9D', border: '#E0457A' },
 };
 
 export default function LibraryScreen() {
