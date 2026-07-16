@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -14,7 +14,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '@/lib/i18n';
+import OnboardingOverlay from '@/components/OnboardingOverlay';
+
+const ONBOARDING_KEY = 'kelime-bulmaca:onboarding-seen:v1';
 
 function useFloatAnim(delay = 0, amplitude = 12, duration = 1800) {
   const val = useSharedValue(0);
@@ -87,6 +91,21 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const bounceValue = useSharedValue(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if onboarding has been seen — show only on first launch
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_KEY).then((val) => {
+      if (!val) setShowOnboarding(true);
+    }).catch(() => {
+      setShowOnboarding(true);
+    });
+  }, []);
+
+  const finishOnboarding = () => {
+    AsyncStorage.setItem(ONBOARDING_KEY, '1').catch(() => {});
+    setShowOnboarding(false);
+  };
 
   // Animal float animations — staggered so they move independently
   const elmaFloat = useFloatAnim(0, 14, 1700);
@@ -166,6 +185,8 @@ export default function WelcomeScreen() {
           </LinearGradient>
         </Pressable>
       </View>
+
+      <OnboardingOverlay visible={showOnboarding} onDone={finishOnboarding} />
     </LinearGradient>
   );
 }

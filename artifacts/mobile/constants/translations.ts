@@ -76,6 +76,15 @@ const tr = {
   tutorialGotIt: 'Anladım!',
   selectWord: 'Bu kelimeyi oyna',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: 'Hoş geldin! 👋',
+  onboarding1Body: 'Türkçe kelimeleri öğrenmek için eğlenceli bir yolculuğa çıkıyoruz!',
+  onboarding2Title: 'Harfleri sürükle! ✋',
+  onboarding2Body: 'Alttaki harfleri yukarıdaki kutulara sürükle ya da sadece dokun!',
+  onboarding3Title: 'Coin kazan! 🏆',
+  onboarding3Body: 'Her kelimeyi tamamladığında coin kazanırsın. Haydi başlayalım!',
+  onboardingNext: 'İleri →',
+  onboardingStart: 'Haydi Oynayalım! 🎉',
+  onboardingSkip: 'Atla',
 };
 
 const en = {
@@ -125,6 +134,15 @@ const en = {
   tutorialGotIt: 'Got it!',
   selectWord: 'Play this word',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: 'Welcome! 👋',
+  onboarding1Body: 'Let\'s go on a fun journey to learn Turkish words!',
+  onboarding2Title: 'Drag the letters! ✋',
+  onboarding2Body: 'Drag letters from the bottom into the boxes above — or just tap them!',
+  onboarding3Title: 'Earn coins! 🏆',
+  onboarding3Body: 'Finish every word to collect coins. Ready? Let\'s go!',
+  onboardingNext: 'Next →',
+  onboardingStart: 'Let\'s Play! 🎉',
+  onboardingSkip: 'Skip',
 };
 
 const fr = {
@@ -174,6 +192,15 @@ const fr = {
   tutorialGotIt: "C'est parti !",
   selectWord: 'Jouer ce mot',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: 'Bienvenue ! 👋',
+  onboarding1Body: 'Partons à la découverte des mots turcs dans une aventure amusante !',
+  onboarding2Title: 'Glisse les lettres ! ✋',
+  onboarding2Body: 'Glisse les lettres du bas dans les cases en haut — ou touche-les !',
+  onboarding3Title: 'Gagne des pièces ! 🏆',
+  onboarding3Body: 'Complète chaque mot pour gagner des pièces. Prêt ? Allons-y !',
+  onboardingNext: 'Suivant →',
+  onboardingStart: 'On joue ! 🎉',
+  onboardingSkip: 'Passer',
 };
 
 const es = {
@@ -223,6 +250,15 @@ const es = {
   tutorialGotIt: '¡Entendido!',
   selectWord: 'Jugar esta palabra',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: '¡Bienvenido! 👋',
+  onboarding1Body: '¡Emprendamos un viaje divertido para aprender palabras turcas!',
+  onboarding2Title: '¡Arrastra las letras! ✋',
+  onboarding2Body: 'Arrastra las letras de abajo a los cuadros de arriba, ¡o tócalas!',
+  onboarding3Title: '¡Gana monedas! 🏆',
+  onboarding3Body: 'Completa cada palabra para ganar monedas. ¿Listo? ¡Vamos!',
+  onboardingNext: 'Siguiente →',
+  onboardingStart: '¡A jugar! 🎉',
+  onboardingSkip: 'Saltar',
 };
 
 const it = {
@@ -272,6 +308,15 @@ const it = {
   tutorialGotIt: 'Ho capito!',
   selectWord: 'Gioca questa parola',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: 'Benvenuto! 👋',
+  onboarding1Body: 'Partiamo per un viaggio divertente alla scoperta delle parole turche!',
+  onboarding2Title: 'Trascina le lettere! ✋',
+  onboarding2Body: 'Trascina le lettere in basso nelle caselle in alto — o toccale!',
+  onboarding3Title: 'Guadagna monete! 🏆',
+  onboarding3Body: 'Completa ogni parola per guadagnare monete. Pronti? Via!',
+  onboardingNext: 'Avanti →',
+  onboardingStart: 'Giochiamo! 🎉',
+  onboardingSkip: 'Salta',
 };
 
 const de = {
@@ -316,11 +361,20 @@ const de = {
   emptyCategoryBody: 'Keine Rätsel in dieser Kategorie.\nWähle eine andere in der Bibliothek!',
   dragHint: 'Ziehen oder tippen',
   hearWord: 'Hören',
-  tutorialTitle: 'So geht’s',
+  tutorialTitle: "So geht's",
   tutorialBody: 'Tippe einen Buchstaben an oder ziehe ihn in ein Feld. Der richtige bleibt!',
   tutorialGotIt: 'Verstanden!',
   selectWord: 'Dieses Wort spielen',
   wordsProgress: '{done}/{total}',
+  onboarding1Title: 'Willkommen! 👋',
+  onboarding1Body: 'Lass uns auf eine lustige Reise gehen und türkische Wörter lernen!',
+  onboarding2Title: 'Buchstaben ziehen! ✋',
+  onboarding2Body: 'Ziehe Buchstaben von unten in die Kästchen oben — oder tippe einfach!',
+  onboarding3Title: 'Münzen sammeln! 🏆',
+  onboarding3Body: 'Schließe jedes Wort ab, um Münzen zu sammeln. Bereit? Los geht\'s!',
+  onboardingNext: 'Weiter →',
+  onboardingStart: 'Spielen! 🎉',
+  onboardingSkip: 'Überspringen',
 };
 
 export const translations = { en, fr, es, it, de, tr } as const;

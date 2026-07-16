@@ -41,11 +41,16 @@ export default function PlayScreen() {
   }, [selectedCategory]);
 
   useEffect(() => {
-    // Show tutorial every time the play screen is mounted
-    setShowTutorial(true);
+    // Show tutorial only on first visit — check AsyncStorage before showing
+    AsyncStorage.getItem(TUTORIAL_KEY).then((val) => {
+      if (!val) setShowTutorial(true);
+    }).catch(() => {
+      setShowTutorial(true);
+    });
   }, []);
 
   const dismissTutorial = () => {
+    AsyncStorage.setItem(TUTORIAL_KEY, '1').catch(() => {});
     setShowTutorial(false);
   };
 
