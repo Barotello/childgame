@@ -43,9 +43,14 @@ export default function SettingsScreen() {
                   selected && { backgroundColor: '#E4FBEE', borderColor: colors.success },
                 ]}
               >
-                <Text style={[styles.langLabel, { color: colors.foreground }]}>
-                  {LOCALE_FLAGS[lang]} {LOCALE_LABELS[lang]}
-                </Text>
+                <View style={styles.langLeft}>
+                  <View style={[styles.flagBadge, selected && { borderColor: colors.success }]}>
+                    <Text style={styles.flagEmoji}>{LOCALE_FLAGS[lang]}</Text>
+                  </View>
+                  <Text style={[styles.langLabel, { color: colors.foreground }]}>
+                    {LOCALE_LABELS[lang]}
+                  </Text>
+                </View>
                 {selected ? <Feather name="check-circle" size={18} color={colors.success} /> : null}
               </Pressable>
             );
@@ -116,8 +121,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 10,
     marginBottom: 8,
+  },
+  langLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  flagBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  flagEmoji: {
+    fontSize: 24,
   },
   langLabel: {
     fontSize: 15,
