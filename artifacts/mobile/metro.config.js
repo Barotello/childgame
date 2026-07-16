@@ -15,6 +15,15 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 
+// Exclude Replit agent/skill directories — they contain temp files that can
+// disappear mid-watch and crash Metro with ENOENT.
+const BLOCKED_DIRS = ['.local', '.agents', '.cache', '.git'];
+config.resolver.blockList = new RegExp(
+  BLOCKED_DIRS.map(d =>
+    `^${path.resolve(monorepoRoot, d).replace(/[/\\]/g, '[/\\\\]')}.*`
+  ).join('|')
+);
+
 // Explicit resolution for packages that live only via pnpm symlinks
 // (helps when Metro fails to walk outside the package folder).
 const localSpeech = path.resolve(projectRoot, 'node_modules/expo-speech');
