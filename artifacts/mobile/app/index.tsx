@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '@/lib/i18n';
 import OnboardingOverlay from '@/components/OnboardingOverlay';
 
-const ONBOARDING_KEY = 'kelime-bulmaca:onboarding-seen:v1';
+const ONBOARDING_KEY = 'kelime-bulmaca:onboarding-seen:v2';
 
 function useFloatAnim(delay = 0, amplitude = 12, duration = 1800) {
   const val = useSharedValue(0);
@@ -143,9 +143,9 @@ export default function WelcomeScreen() {
         <Animated.View style={[styles.titleContainer, titleAnimatedStyle]}>
           <View style={styles.childImageContainer}>
             <Image
-              source={require('../assets/images/child.png')}
+              source={require('../assets/images/mino.png')}
               style={styles.childImage}
-              contentFit="cover"
+              contentFit="contain"
             />
           </View>
           <View style={{ marginTop: 12 }}>
@@ -176,7 +176,7 @@ export default function WelcomeScreen() {
 
         <Pressable
           style={({ pressed }) => [styles.playButton, pressed && { transform: [{ scale: 0.95 }] }]}
-          onPress={() => router.replace('/(tabs)/game')}
+          onPress={() => router.replace('/(tabs)/journey')}
         >
           <LinearGradient colors={['#06D6A0', '#04A77B']} style={styles.playButtonGradient}>
             <View style={styles.jellyHighlight} />
@@ -207,10 +207,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   childImageContainer: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: '#FFFFFF',
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: '#FFF4DF',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },

@@ -29,24 +29,27 @@ type TabBarProps = {
 };
 
 const TAB_COLORS: Record<string, { bg: string; border: string }> = {
-  game: { bg: '#93D656', border: '#5DAE30' },
+  journey: { bg: '#93D656', border: '#5DAE30' },
   library: { bg: '#56A8DF', border: '#327EBC' },
   store: { bg: '#FFAC4A', border: '#E08520' },
-  settings: { bg: '#F14A6F', border: '#C6244A' },
 };
+
+const CHILD_TABS = new Set(['journey', 'library', 'store']);
 
 function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const currentRoute = state.routes[state.index]?.name;
+  if (currentRoute === 'game' || currentRoute === 'settings') return null;
 
-
+  const visibleRoutes = state.routes.filter((route) => CHILD_TABS.has(route.name));
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 12 }]}>
-      {state.routes.map((route, index) => {
+      {visibleRoutes.map((route) => {
         const { options } = descriptors[route.key];
-        const isFocused = state.index === index;
-        const colorData = TAB_COLORS[route.name] || TAB_COLORS.game;
+        const routeIndex = state.routes.findIndex((item) => item.key === route.key);
+        const isFocused = state.index === routeIndex;
+        const colorData = TAB_COLORS[route.name] || TAB_COLORS.journey;
 
         const icon = options.tabBarIcon
           ? options.tabBarIcon({ focused: isFocused, color: '#FFFFFF', size: 24 })
@@ -116,31 +119,31 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="game"
+        name="journey"
         options={{
-          title: t('play'),
-          tabBarIcon: ({ color, size }) => <Feather name="play-circle" size={size} color={color} />,
+          title: t('journey'),
+          tabBarIcon: ({ color, size }) => <Feather name="map" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="library"
         options={{
-          title: t('library'),
+          title: t('explore'),
           tabBarIcon: ({ color, size }) => <Feather name="book-open" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="store"
         options={{
-          title: t('store'),
-          tabBarIcon: ({ color, size }) => <Feather name="shopping-bag" size={size} color={color} />,
+          title: t('rewards'),
+          tabBarIcon: ({ color, size }) => <Feather name="award" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen name="game" options={{ href: null }} />
       <Tabs.Screen
         name="settings"
         options={{
-          title: t('settings'),
-          tabBarIcon: ({ color, size }) => <Feather name="settings" size={size} color={color} />,
+          href: null,
         }}
       />
     </Tabs>
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     borderWidth: 4,
     borderColor: '#F0E6FF',
-    paddingHorizontal: 10,
+    paddingHorizontal: 22,
     shadowColor: '#3B2F63',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,

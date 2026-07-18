@@ -1,16 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, Text, View, Pressable, Dimensions, ScrollView } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, Text, View, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import LetterTile, { DropResult, MIN_TILE_SIZE } from './LetterTile';
 import type { WordItem } from '@/constants/words';
 import { type Locale } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
 import { playCorrectSound } from '@/lib/sounds';
-import { speakWord } from '@/lib/speech';
+import { speakWord, speakWordAndWait } from '@/lib/speech';
 import { useI18n } from '@/lib/i18n';
 import { useGameState } from '@/lib/gameState';
 import { Feather } from '@expo/vector-icons';
+import { gameTheme } from '@/constants/gameTheme';
 
 const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38C6B0'];
 
@@ -66,25 +73,33 @@ type WordRoundProps = {
   onSkip?: () => void;
 };
 
-const { width: WINDOW_WIDTH } = Dimensions.get('window');
-
 export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) {
-  const { hintTokens, consumeHintToken, skipTokens, consumeSkipToken } = useGameState();
+  const {
+    hintTokens,
+    consumeHintToken,
+    skipTokens,
+    consumeSkipToken,
+    recordWordAttempt,
+    recordHintUse,
+    recordSkipUse,
+  } = useGameState();
   const colors = useColors();
   const { locale, t } = useI18n();
+  const { width: windowWidth } = useWindowDimensions();
   const rawLetters = word.spellings[locale].toLocaleUpperCase(locale).split('');
   // Never create slots for spaces or hyphens (defensive for any residual multi-word data)
   const letters = rawLetters.filter((ch) => ch.trim().length > 0 && ch !== '-');
   const tiles = useMemo(() => buildTray(letters, locale), [word.id, locale]);
 
   const maxGap = 8;
+  const availableWidth = Math.min(windowWidth, 560);
   const padding = 48;
-  const rawSize = Math.floor((WINDOW_WIDTH - padding - maxGap * Math.max(0, letters.length - 1)) / Math.max(1, letters.length));
-  // Prefer 44–52pt targets for small fingers (iPhone 11); wrap if needed rather than shrinking below MIN.
-  const dynamicTileSize = Math.min(52, Math.max(MIN_TILE_SIZE, rawSize));
+  const rawSize = Math.floor((availableWidth - padding - maxGap * Math.max(0, letters.length - 1)) / Math.max(1, letters.length));
+  // Keep every letter comfortably tappable; long words wrap instead of shrinking.
+  const dynamicTileSize = Math.min(56, Math.max(MIN_TILE_SIZE, rawSize));
   const dynamicGap = Math.min(
     10,
-    Math.max(4, Math.floor((WINDOW_WIDTH - padding - letters.length * dynamicTileSize) / Math.max(1, letters.length - 1))),
+    Math.max(6, Math.floor((availableWidth - padding - letters.length * dynamicTileSize) / Math.max(1, letters.length - 1))),
   );
 
   const [filled, setFilled] = useState<Array<string | null>>(() => letters.map(() => null));
@@ -98,10 +113,14 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   const slotMeasurements = useRef<SlotMeasurement[]>([]);
   const revealProgress = useSharedValue(0);
   const completionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const feedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const feedbackProgress = useSharedValue(0);
 
   useEffect(() => {
     return () => {
       if (completionTimeout.current) clearTimeout(completionTimeout.current);
+      if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
     };
   }, []);
 
@@ -135,6 +154,23 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
     measureSlots();
   };
 
+  const showFeedback = (result: 'correct' | 'wrong') => {
+    setFeedback(result);
+    feedbackProgress.value = 0;
+    feedbackProgress.value = withSequence(
+      withSpring(1, { damping: 12, stiffness: 170 }),
+      withTiming(1, { duration: 700 }),
+      withTiming(0, { duration: 180 }),
+    );
+    if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current);
+    feedbackTimeout.current = setTimeout(() => setFeedback(null), 1100);
+  };
+
+  const handleLearningFeedback = (result: 'correct' | 'wrong') => {
+    showFeedback(result);
+    recordWordAttempt(word.id, result === 'correct');
+  };
+
   const applyLetterAtIndex = (index: number, letter: string, tileKey?: string) => {
     const next = [...filledRef.current];
     next[index] = letter;
@@ -147,10 +183,10 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
     revealProgress.value = withTiming(doneCount / total, { duration: 250 });
 
     if (doneCount === total) {
-      // Celebrate with spoken word
-      speakWord(word.spellings[locale], locale);
       if (completionTimeout.current) clearTimeout(completionTimeout.current);
-      completionTimeout.current = setTimeout(() => onComplete(), 700);
+      speakWordAndWait(word.spellings[locale], locale).then(() => {
+        completionTimeout.current = setTimeout(onComplete, 250);
+      });
     }
   };
 
@@ -161,6 +197,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
     const consumed = consumeHintToken();
     if (!consumed) return;
+    recordHintUse(word.id);
 
     const targetLetter = letters[emptyIndex];
     const matchingTile = tiles.find(
@@ -169,6 +206,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
     applyLetterAtIndex(emptyIndex, targetLetter, matchingTile?.key);
     playCorrectSound();
+    showFeedback('correct');
     forceRender((n) => n + 1);
   };
 
@@ -176,6 +214,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
     if (skipTokens <= 0) return;
     const consumed = consumeSkipToken();
     if (!consumed) return;
+    recordSkipUse(word.id);
 
     if (completionTimeout.current) clearTimeout(completionTimeout.current);
     if (onSkip) {
@@ -224,16 +263,20 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
     return true;
   };
 
-  const silhouetteStyle = useAnimatedStyle(() => ({
-    opacity: 1 - revealProgress.value,
-  }));
-
   const imageWrapStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 + revealProgress.value * 0.06 }],
   }));
 
   const emojiStyle = useAnimatedStyle(() => ({
-    opacity: 0.2 + 0.8 * revealProgress.value,
+    opacity: 0.7 + 0.3 * revealProgress.value,
+  }));
+
+  const feedbackStyle = useAnimatedStyle(() => ({
+    opacity: feedbackProgress.value,
+    transform: [
+      { translateY: (1 - feedbackProgress.value) * 8 },
+      { scale: 0.94 + feedbackProgress.value * 0.06 },
+    ],
   }));
 
   const wordLabel = word.spellings[locale];
@@ -241,14 +284,28 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   return (
     <View style={styles.container}>
       <View style={[styles.screenCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[styles.screenInner, { borderColor: colors.secondary, backgroundColor: colors.muted }]}>
+        <View style={styles.guideRow}>
+          <View style={styles.guideIcon}>
+            <Feather name="headphones" size={20} color={gameTheme.colors.sky} />
+          </View>
+          <Text style={styles.guideText}>{t('listenAndFind')}</Text>
           <Pressable
             style={styles.hearButton}
             onPress={() => speakWord(wordLabel, locale)}
             accessibilityLabel={t('hearWord')}
+            accessibilityRole="button"
+            hitSlop={6}
           >
-            <Feather name="volume-2" size={18} color={colors.secondary} />
+            <Feather name="volume-2" size={23} color="#FFFFFF" />
           </Pressable>
+        </View>
+
+        <View
+          style={[
+            styles.screenInner,
+            { borderColor: gameTheme.colors.sky, backgroundColor: gameTheme.colors.skySoft },
+          ]}
+        >
           <Animated.View style={[styles.imageWrap, imageWrapStyle]}>
             {word.emoji ? (
               <Animated.Text style={[{ fontSize: 84, textAlign: 'center', lineHeight: 140 }, emojiStyle]}>
@@ -269,22 +326,10 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
                 }}
               />
             ) : (
-              <>
-                <Image source={word.image} style={styles.image} contentFit="contain" />
-                <Animated.View style={[styles.silhouetteOverlay, silhouetteStyle]}>
-                  <Image
-                    source={word.image}
-                    style={styles.image}
-                    contentFit="contain"
-                    tintColor={colors.mutedForeground}
-                  />
-                </Animated.View>
-              </>
+              <Image source={word.image} style={styles.image} contentFit="contain" />
             )}
           </Animated.View>
         </View>
-
-        <Text style={[styles.dragHint, { color: colors.mutedForeground }]}>{t('dragHint')}</Text>
 
         <View style={[styles.slotsRow, { gap: dynamicGap }]} onLayout={handleSlotsLayout}>
           {letters.map((letter, index) => {
@@ -315,45 +360,89 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
         </View>
       </View>
 
-      <View style={styles.actionsRow}>
-        <Pressable
-          onPress={handleHintPress}
-          disabled={hintTokens <= 0}
-          style={[styles.actionButton, { backgroundColor: '#3AB0FF', opacity: hintTokens <= 0 ? 0.4 : 1 }]}
-          accessibilityLabel={`${t('hint')} ${hintTokens}`}
-        >
-          <Feather name="help-circle" size={18} color="#FFFFFF" />
-          <Text style={styles.actionText}>
-            {t('hint')} ({hintTokens})
-          </Text>
-        </Pressable>
+      <View style={styles.playZone}>
+        <View style={styles.feedbackSlot} pointerEvents="none">
+          {feedback ? (
+            <Animated.View
+              style={[
+                styles.feedbackPill,
+                feedback === 'correct' ? styles.feedbackCorrect : styles.feedbackWrong,
+                feedbackStyle,
+              ]}
+            >
+              <Feather
+                name={feedback === 'correct' ? 'check-circle' : 'refresh-cw'}
+                size={20}
+                color={feedback === 'correct' ? gameTheme.colors.mint : gameTheme.colors.retry}
+              />
+              <Text
+                style={[
+                  styles.feedbackText,
+                  { color: feedback === 'correct' ? '#238A59' : '#A95D37' },
+                ]}
+              >
+                {t(feedback === 'correct' ? 'correctLetter' : 'tryAnotherLetter')}
+              </Text>
+            </Animated.View>
+          ) : null}
+        </View>
 
-        <Pressable
-          onPress={handleSkipPress}
-          disabled={skipTokens <= 0}
-          style={[styles.actionButton, { backgroundColor: '#FFD166', opacity: skipTokens <= 0 ? 0.4 : 1 }]}
-          accessibilityLabel={`${t('skip')} ${skipTokens}`}
-        >
-          <Feather name="skip-forward" size={18} color="#FFFFFF" />
-          <Text style={styles.actionText}>
-            {t('skip')} ({skipTokens})
-          </Text>
-        </Pressable>
-      </View>
+        <Text style={styles.dragHint}>{t('dragHint')}</Text>
 
-      <View style={[styles.tray, { gap: dynamicGap }]}>
-        {tiles.map((tile) => (
-          <View key={tile.key} style={[styles.trayItem, { width: dynamicTileSize, height: dynamicTileSize }]}>
-            <LetterTile
-              letter={tile.letter}
-              color={tile.color}
-              locked={usedTileKeys.current.has(tile.key)}
-              size={dynamicTileSize}
-              onAttemptDrop={attemptDrop}
-              onTapPlace={handleTapPlace}
-            />
-          </View>
-        ))}
+        <View style={[styles.tray, { gap: dynamicGap }]}>
+          {tiles.map((tile) => (
+            <View
+              key={tile.key}
+              style={[styles.trayItem, { width: dynamicTileSize, height: dynamicTileSize }]}
+            >
+              <LetterTile
+                letter={tile.letter}
+                color={tile.color}
+                locked={usedTileKeys.current.has(tile.key)}
+                size={dynamicTileSize}
+                onAttemptDrop={attemptDrop}
+                onTapPlace={handleTapPlace}
+                onFeedback={handleLearningFeedback}
+              />
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.actionsRow}>
+          <Pressable
+            onPress={handleHintPress}
+            disabled={hintTokens <= 0}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: gameTheme.colors.sky,
+                opacity: hintTokens <= 0 ? 0.4 : 1,
+              },
+            ]}
+            accessibilityLabel={`${t('hint')} ${hintTokens}`}
+          >
+            <Feather name="help-circle" size={18} color="#FFFFFF" />
+            <Text style={styles.actionText}>
+              {t('hint')} ({hintTokens})
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={handleSkipPress}
+            disabled={skipTokens <= 0}
+            style={[
+              styles.actionButton,
+              styles.skipButton,
+              { opacity: skipTokens <= 0 ? 0.4 : 1 },
+            ]}
+            accessibilityLabel={`${t('skip')} ${skipTokens}`}
+          >
+            <Feather name="skip-forward" size={18} color={gameTheme.colors.ink} />
+            <Text style={[styles.actionText, { color: gameTheme.colors.ink }]}>
+              {t('skip')} ({skipTokens})
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -363,47 +452,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: 16,
     overflow: 'visible',
   },
   screenCard: {
     width: '100%',
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: 12,
+    borderRadius: gameTheme.radius.card,
+    borderWidth: 2,
+    padding: 14,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
-    marginTop: 2,
+    marginTop: 4,
+  },
+  guideRow: {
+    width: '100%',
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 10,
+    gap: 9,
+  },
+  guideIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: gameTheme.colors.skySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guideText: {
+    flex: 1,
+    color: gameTheme.colors.ink,
+    fontSize: 15,
+    fontWeight: '800',
+    lineHeight: 19,
   },
   screenInner: {
     width: '100%',
-    height: 160,
-    borderRadius: 16,
+    height: 148,
+    borderRadius: 20,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   hearButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    zIndex: 5,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    width: gameTheme.touchTarget,
+    height: gameTheme.touchTarget,
+    borderRadius: 24,
+    backgroundColor: gameTheme.colors.sky,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
+    elevation: 4,
   },
   imageWrap: {
     width: 140,
@@ -413,24 +521,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  silhouetteOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-  },
   dragHint: {
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 8,
-    marginBottom: 2,
+    color: gameTheme.colors.inkSoft,
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   slotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingVertical: 10,
+    paddingTop: 12,
+    paddingBottom: 4,
     paddingHorizontal: 4,
   },
   actionsRow: {
@@ -438,14 +541,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    marginVertical: 8,
+    marginTop: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 22,
+    minHeight: gameTheme.touchTarget,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: gameTheme.radius.pill,
     gap: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -455,11 +559,11 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
   },
   slot: {
-    borderWidth: 2,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -472,12 +576,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    paddingBottom: 16,
-    paddingTop: 20,
+    paddingVertical: 4,
     width: '100%',
     overflow: 'visible',
   },
   trayItem: {
     overflow: 'visible',
+  },
+  playZone: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 2,
+  },
+  feedbackSlot: {
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  feedbackPill: {
+    minHeight: 36,
+    maxWidth: '96%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    borderRadius: gameTheme.radius.pill,
+    borderWidth: 2,
+    paddingHorizontal: 14,
+  },
+  feedbackCorrect: {
+    backgroundColor: gameTheme.colors.mintSoft,
+    borderColor: '#B7EBCF',
+  },
+  feedbackWrong: {
+    backgroundColor: gameTheme.colors.retrySoft,
+    borderColor: '#F6C8AA',
+  },
+  feedbackText: {
+    flexShrink: 1,
+    fontSize: 13,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  skipButton: {
+    backgroundColor: gameTheme.colors.sunshine,
   },
 });

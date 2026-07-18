@@ -1,180 +1,120 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '@/components/GameHeader';
-import { useColors } from '@/hooks/useColors';
+import categories from '@/constants/library';
+import words from '@/constants/words';
+import { gameTheme } from '@/constants/gameTheme';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
 
-export default function StoreScreen() {
-  const colors = useColors();
+type RewardCardProps = {
+  emoji: string;
+  title: string;
+  progress: string;
+  unlocked: boolean;
+  color: string;
+};
+
+function RewardCard({ emoji, title, progress, unlocked, color }: RewardCardProps) {
+  return (
+    <View style={[styles.rewardCard, !unlocked && styles.lockedReward]}>
+      <View style={[styles.rewardIcon, { backgroundColor: `${color}24`, borderColor: color }]}>
+        <Text style={styles.rewardEmoji}>{emoji}</Text>
+        {unlocked ? (
+          <View style={styles.checkBadge}><Feather name="check" size={13} color="#FFFFFF" /></View>
+        ) : (
+          <View style={styles.lockBadge}><Feather name="lock" size={13} color={gameTheme.colors.inkSoft} /></View>
+        )}
+      </View>
+      <Text style={styles.rewardTitle}>{title}</Text>
+      <Text style={styles.rewardProgress}>{progress}</Text>
+    </View>
+  );
+}
+
+export default function RewardsScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
-  const { coins, hintTokens, skipTokens, hintCost, hintPackCost, hintPackSize, buyHint, buyHintPack } =
-    useGameState();
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const notify = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage((prev) => (prev === message ? null : prev));
-    }, 3000);
-  };
-
-  const handleBuyHint = () => {
-    const success = buyHint();
-    notify(success ? t('purchaseHintSuccess') : t('purchaseHintFail'));
-  };
-
-  const handleBuyPack = () => {
-    const success = buyHintPack();
-    notify(success ? t('purchasePackSuccess', { n: hintPackSize }) : t('purchaseHintFail'));
-  };
+  const { completedLevels } = useGameState();
+  const completeCount = completedLevels.length;
 
   return (
     <LinearGradient
-      colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 100 }]}
+      colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
+      style={[styles.root, { paddingTop: insets.top + 10 }]}
     >
       <GameHeader />
-      <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('store')}</Text>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.cardHeader}>
-            <Feather name="help-circle" size={22} color={colors.secondary} />
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-              {t('hintTokens', { n: hintTokens })}
-            </Text>
-          </View>
-          <Text style={[styles.cardHint, { color: colors.mutedForeground }]}>{t('hintDesc')}</Text>
-
-          <Pressable
-            onPress={handleBuyHint}
-            disabled={coins < hintCost}
-            style={[styles.buyRow, { borderColor: colors.border, opacity: coins < hintCost ? 0.5 : 1 }]}
-          >
-            <Text style={[styles.buyLabel, { color: colors.foreground }]}>{t('buyHint1')}</Text>
-            <View style={[styles.priceBadge, { backgroundColor: colors.accent }]}>
-              <Feather name="star" size={13} color={colors.accentForeground} />
-              <Text style={[styles.priceText, { color: colors.accentForeground }]}>{hintCost}</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            onPress={handleBuyPack}
-            disabled={coins < hintPackCost}
-            style={[styles.buyRow, { borderColor: colors.border, opacity: coins < hintPackCost ? 0.5 : 1 }]}
-          >
-            <Text style={[styles.buyLabel, { color: colors.foreground }]}>
-              {t('buyHint5', { n: hintPackSize })}
-            </Text>
-            <View style={[styles.priceBadge, { backgroundColor: colors.accent }]}>
-              <Feather name="star" size={13} color={colors.accentForeground} />
-              <Text style={[styles.priceText, { color: colors.accentForeground }]}>{hintPackCost}</Text>
-            </View>
-          </Pressable>
-        </View>
-
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.cardHeader}>
-            <Feather name="skip-forward" size={22} color={colors.secondary} />
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-              {t('skipTokens', { n: skipTokens })}
-            </Text>
-          </View>
-          <Text style={[styles.cardHint, { color: colors.mutedForeground }]}>{t('skipDesc')}</Text>
-        </View>
+      <View style={styles.heading}>
+        <Text style={styles.title}>{t('yourRewards')}</Text>
+        <Text style={styles.subtitle}>{t('rewardsBody')}</Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={[styles.grid, { paddingBottom: insets.bottom + 126 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <RewardCard
+          emoji="🌟"
+          title={t('wordCollector')}
+          progress={t('rewardProgress', { done: Math.min(completeCount, 5), total: 5 })}
+          unlocked={completeCount >= 5}
+          color={gameTheme.colors.sunshine}
+        />
+        <RewardCard
+          emoji="🏆"
+          title={t('categoryChampion')}
+          progress={t('rewardProgress', {
+            done: Math.min(
+              categories.filter((category) => {
+                const indexes = words
+                  .map((word, index) => ({ word, index }))
+                  .filter(({ word }) => word.category === category.id)
+                  .map(({ index }) => index);
+                return indexes.length > 0 && indexes.every((index) => completedLevels.includes(index));
+              }).length,
+              1,
+            ),
+            total: 1,
+          })}
+          unlocked={categories.some((category) => {
+            const indexes = words
+              .map((word, index) => ({ word, index }))
+              .filter(({ word }) => word.category === category.id)
+              .map(({ index }) => index);
+            return indexes.length > 0 && indexes.every((index) => completedLevels.includes(index));
+          })}
+          color={gameTheme.colors.coral}
+        />
+        <RewardCard emoji="🧠" title={t('superLearner')} progress={t('rewardProgress', { done: Math.min(completeCount, 20), total: 20 })} unlocked={completeCount >= 20} color={gameTheme.colors.sky} />
+        <RewardCard emoji="🚀" title={t('wordExplorer')} progress={t('rewardProgress', { done: Math.min(completeCount, 50), total: 50 })} unlocked={completeCount >= 50} color={gameTheme.colors.mint} />
       </ScrollView>
-
-      {toastMessage ? (
-        <View style={[styles.toast, { bottom: insets.bottom + 100, backgroundColor: colors.foreground }]}>
-          <Feather name="info" size={18} color={colors.background} />
-          <Text style={[styles.toastText, { color: colors.background }]}>{toastMessage}</Text>
-        </View>
-      ) : null}
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-  content: {
-    paddingHorizontal: 20,
-    gap: 16,
-    paddingBottom: 20,
-  },
-  card: {
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
+  root: { flex: 1 },
+  heading: { paddingHorizontal: 20, marginBottom: 18 },
+  title: { color: gameTheme.colors.ink, fontSize: 24, fontWeight: '900' },
+  subtitle: { color: gameTheme.colors.inkSoft, fontSize: 13, lineHeight: 19, fontWeight: '700', marginTop: 5 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 14 },
+  rewardCard: {
+    width: '47.8%',
+    minHeight: 210,
+    backgroundColor: gameTheme.colors.white,
+    borderWidth: 2,
+    borderColor: gameTheme.colors.outline,
+    borderRadius: 28,
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    padding: 15,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  cardHint: {
-    fontSize: 13,
-    marginBottom: 14,
-    lineHeight: 18,
-  },
-  buyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    paddingVertical: 12,
-  },
-  buyLabel: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  priceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  priceText: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  toast: {
-    position: 'absolute',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  toastText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  lockedReward: { opacity: 0.68 },
+  rewardIcon: { width: 116, height: 116, borderRadius: 38, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  rewardEmoji: { fontSize: 62 },
+  checkBadge: { position: 'absolute', top: -7, right: -7, width: 30, height: 30, borderRadius: 15, backgroundColor: gameTheme.colors.mint, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFFFFF' },
+  lockBadge: { position: 'absolute', top: -7, right: -7, width: 30, height: 30, borderRadius: 15, backgroundColor: '#EEE8F2', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFFFFF' },
+  rewardTitle: { color: gameTheme.colors.ink, fontSize: 15, fontWeight: '900', textAlign: 'center', marginTop: 12 },
+  rewardProgress: { color: gameTheme.colors.inkSoft, fontSize: 12, fontWeight: '700', marginTop: 5 },
 });

@@ -1,7 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { type CategoryId } from '@/constants/library';
+import {
+  recordLearningEvent,
+  type LearningRecords,
+} from '@/constants/learning';
 import words from '@/constants/words';
+import { firstAvailableLevel, isWordUnlocked } from '@/constants/progression';
 import { setSoundsMuted } from '@/lib/sounds';
 import { setSpeechMuted } from '@/lib/speech';
 
@@ -10,6 +15,12 @@ const HINT_COST = 20;
 const HINT_PACK_COST = 80;
 const HINT_PACK_SIZE = 5;
 const LEVEL_REWARD_COINS = 15;
+const DEFAULT_DAILY_GOAL = 3;
+
+function localDayKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
 
 type PersistedState = {
   coins: number;
@@ -21,6 +32,11 @@ type PersistedState = {
   muted: boolean;
   currentLevel: number;
   selectedCategory: CategoryId;
+  dailyDate: string;
+  dailyWords: number;
+  dailyGoal: number;
+  screenTimeMinutes: number;
+  learningRecords: LearningRecords;
 };
 
 const FIRST_ANIMAL_INDEX = Math.max(
@@ -38,6 +54,11 @@ const DEFAULT_STATE: PersistedState = {
   muted: false,
   currentLevel: FIRST_ANIMAL_INDEX,
   selectedCategory: 'animals',
+  dailyDate: localDayKey(),
+  dailyWords: 0,
+  dailyGoal: DEFAULT_DAILY_GOAL,
+  screenTimeMinutes: 20,
+  learningRecords: {},
 };
 
 type GameStateContextValue = PersistedState & {
@@ -49,13 +70,19 @@ type GameStateContextValue = PersistedState & {
   setCurrentLevel: (index: number) => void;
   setSelectedCategory: (category: CategoryId) => void;
   /** Select category and jump to a specific word index in one state update. */
-  playWordAt: (index: number, category: CategoryId) => void;
+  playWordAt: (index: number, category: CategoryId) => boolean;
+  isLevelUnlocked: (index: number) => boolean;
   completeLevel: (index: number) => void;
   buyHint: () => boolean;
   buyHintPack: () => boolean;
   consumeHintToken: () => boolean;
   consumeSkipToken: () => boolean;
+  recordWordAttempt: (wordId: string, correct: boolean) => void;
+  recordHintUse: (wordId: string) => void;
+  recordSkipUse: (wordId: string) => void;
   toggleMute: () => void;
+  setDailyGoal: (goal: number) => void;
+  setScreenTimeMinutes: (minutes: number) => void;
 };
 
 const GameStateContext = createContext<GameStateContextValue | null>(null);
@@ -71,6 +98,11 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         if (raw) {
           const parsed = JSON.parse(raw) as Partial<PersistedState>;
           const merged = { ...DEFAULT_STATE, ...parsed };
+          merged.learningRecords = parsed.learningRecords ?? {};
+          if (merged.dailyDate !== localDayKey()) {
+            merged.dailyDate = localDayKey();
+            merged.dailyWords = 0;
+          }
           // Guard against stale saves where the persisted level and category
           // don't correspond to the same word (e.g. saves from before
           // categories existed) — snap to the first word of the category.
@@ -113,39 +145,35 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       },
       setSelectedCategory: (category: CategoryId) => {
         setState((prev) => {
-          const categoryIndices: number[] = [];
-          for (let i = 0; i < words.length; i++) {
-            if (words[i].category === category) categoryIndices.push(i);
-          }
-
-          if (categoryIndices.length === 0) {
+          const firstAvailable = firstAvailableLevel(words, prev.completedLevels, category);
+          if (firstAvailable === undefined) {
             return { ...prev, selectedCategory: category };
-          }
-
-          let nextLevel = categoryIndices.find((idx) => !prev.completedLevels.includes(idx));
-          if (nextLevel === undefined) {
-            nextLevel = categoryIndices[0]; // If all completed, just restart from the first one
           }
 
           return {
             ...prev,
             selectedCategory: category,
-            currentLevel: nextLevel,
+            currentLevel: firstAvailable,
           };
         });
       },
       playWordAt: (index: number, category: CategoryId) => {
-        setState((prev) => ({
-          ...prev,
-          selectedCategory: category,
-          currentLevel: Math.max(0, Math.min(index, totalLevels - 1)),
-        }));
+        const canOpen =
+          words[index]?.category === category &&
+          isWordUnlocked(words, state.completedLevels, index);
+        if (!canOpen) return false;
+
+        setState((prev) => ({ ...prev, selectedCategory: category, currentLevel: index }));
+        return true;
       },
+      isLevelUnlocked: (index: number) => isWordUnlocked(words, state.completedLevels, index),
       completeLevel: (index: number) => {
         setState((prev) => {
           const isNew = !prev.completedLevels.includes(index);
           let newSkipTokens = prev.skipTokens;
           let newWordsProgress = prev.wordsProgress;
+          const isToday = prev.dailyDate === localDayKey();
+          const currentDailyWords = isToday ? prev.dailyWords : 0;
           
           if (isNew) {
             newWordsProgress += 1;
@@ -162,6 +190,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
             highestUnlocked: Math.max(prev.highestUnlocked, index + 1),
             skipTokens: newSkipTokens,
             wordsProgress: newWordsProgress,
+            dailyDate: localDayKey(),
+            dailyWords: isNew
+              ? Math.min(prev.dailyGoal, currentDailyWords + 1)
+              : currentDailyWords,
+            learningRecords: words[index]
+              ? recordLearningEvent(prev.learningRecords, words[index].id, 'complete')
+              : prev.learningRecords,
           };
         });
       },
@@ -205,6 +240,28 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         });
         return consumed;
       },
+      recordWordAttempt: (wordId: string, correct: boolean) => {
+        setState((prev) => ({
+          ...prev,
+          learningRecords: recordLearningEvent(
+            prev.learningRecords,
+            wordId,
+            correct ? 'correct' : 'wrong',
+          ),
+        }));
+      },
+      recordHintUse: (wordId: string) => {
+        setState((prev) => ({
+          ...prev,
+          learningRecords: recordLearningEvent(prev.learningRecords, wordId, 'hint'),
+        }));
+      },
+      recordSkipUse: (wordId: string) => {
+        setState((prev) => ({
+          ...prev,
+          learningRecords: recordLearningEvent(prev.learningRecords, wordId, 'skip'),
+        }));
+      },
       toggleMute: () => {
         setState((prev) => {
           const nextMuted = !prev.muted;
@@ -212,6 +269,16 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           setSpeechMuted(nextMuted);
           return { ...prev, muted: nextMuted };
         });
+      },
+      setDailyGoal: (goal: number) => {
+        setState((prev) => ({ ...prev, dailyGoal: Math.max(1, Math.min(5, goal)) }));
+      },
+      setScreenTimeMinutes: (minutes: number) => {
+        const allowed = [15, 20, 30, 45];
+        setState((prev) => ({
+          ...prev,
+          screenTimeMinutes: allowed.includes(minutes) ? minutes : 20,
+        }));
       },
     };
   }, [state, loaded]);

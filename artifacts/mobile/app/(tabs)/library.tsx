@@ -1,31 +1,31 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '@/components/GameHeader';
-import categories from '@/constants/library';
+import categories, { type CategoryId } from '@/constants/library';
+import { practiceWordIds } from '@/constants/learning';
 import words from '@/constants/words';
-import { useColors } from '@/hooks/useColors';
+import { gameTheme } from '@/constants/gameTheme';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
 
-const CATEGORY_COLORS: Record<string, { bg: string; border: string }> = {
-  fruits: { bg: '#93D656', border: '#5DAE30' },
-  animals: { bg: '#FFAC4A', border: '#E08520' },
-  numbers: { bg: '#56A8DF', border: '#327EBC' },
-  colors: { bg: '#F14A6F', border: '#C6244A' },
-  flags: { bg: '#9B72CF', border: '#7B58A6' },
-  body: { bg: '#FF6B9D', border: '#E0457A' },
+const CATEGORY_COLORS: Record<CategoryId, { bg: string; border: string }> = {
+  fruits: { bg: '#8BCB55', border: '#5A9B2F' },
+  animals: { bg: '#FF9D55', border: '#E57A2D' },
+  numbers: { bg: '#59B3EA', border: '#3285BA' },
+  colors: { bg: '#F05E7D', border: '#C63B5B' },
+  flags: { bg: '#9B7AE0', border: '#7252B4' },
+  body: { bg: '#F27DB1', border: '#C94F86' },
 };
 
 export default function LibraryScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, locale } = useI18n();
-  const { completedLevels, selectedCategory, setSelectedCategory, playWordAt } = useGameState();
+  const { completedLevels, playWordAt, isLevelUnlocked, learningRecords } = useGameState();
+  const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null);
 
   const wordIndexById = useMemo(() => {
     const map = new Map<string, number>();
@@ -33,220 +33,246 @@ export default function LibraryScreen() {
     return map;
   }, []);
 
-  const openCategory = (categoryId: typeof selectedCategory) => {
-    setSelectedCategory(categoryId);
-    router.navigate('/game');
-  };
+  const selected = categories.find((category) => category.id === activeCategory);
+  const practiceWords = practiceWordIds(learningRecords)
+    .map((wordId) => {
+      const index = wordIndexById.get(wordId);
+      return index === undefined || !isLevelUnlocked(index) ? undefined : { word: words[index], index };
+    })
+    .filter((item): item is { word: (typeof words)[number]; index: number } => item !== undefined);
 
-  const openWord = (wordId: string, categoryId: typeof selectedCategory) => {
+  const openWord = (wordId: string, categoryId: CategoryId) => {
     const index = wordIndexById.get(wordId);
-    if (index === undefined) return;
-    playWordAt(index, categoryId);
-    router.navigate('/game');
+    if (index !== undefined && playWordAt(index, categoryId)) router.push('/game');
   };
 
   return (
     <LinearGradient
-      colors={['#FFF8EC', '#FFE8CF']}
-      style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 }]}
+      colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
+      style={[styles.root, { paddingTop: insets.top + 10 }]}
     >
       <GameHeader />
-      <Text style={[styles.subtitle, { color: colors.foreground }]}>{t('learnedWords')}</Text>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {categories.map((category) => {
-          const selected = category.id === selectedCategory;
-          const colorData = CATEGORY_COLORS[category.id] || { bg: '#56A8DF', border: '#327EBC' };
-          const playableItems = category.items.filter((item) => item.wordId);
-          const totalPlayable = playableItems.length;
-          const completedCount = playableItems.filter((item) => {
-            const gameIndex = wordIndexById.get(item.wordId!);
-            return gameIndex !== undefined && completedLevels.includes(gameIndex);
-          }).length;
-
-          return (
-            <View key={category.id} style={styles.section}>
-              <Pressable
-                onPress={() => openCategory(category.id)}
-                style={[
-                  styles.sectionHeader,
-                  {
-                    backgroundColor: colorData.bg,
-                    borderColor: colorData.border,
-                    transform: [{ scale: selected ? 1.02 : 1 }],
-                    opacity: selected ? 1 : 0.9,
-                  },
-                ]}
-              >
-                <View style={styles.jellyHighlight} />
-                <View style={styles.sectionHeaderLeft}>
-                  <Text style={{ fontSize: 24 }}>{category.emoji}</Text>
-                  <Text style={[styles.sectionTitle, { color: '#FFFFFF' }]}>
-                    {t(category.titleKey)}
-                    {totalPlayable > 0
-                      ? ` (${t('wordsProgress', { done: completedCount, total: totalPlayable })})`
-                      : ''}
-                  </Text>
-                </View>
-                <Feather name="play-circle" size={22} color="#FFFFFF" />
-              </Pressable>
-
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.row}
-              >
-                {category.items.map((item) => {
-                  const gameIndex = item.wordId ? wordIndexById.get(item.wordId) : undefined;
-                  const learned = gameIndex !== undefined && completedLevels.includes(gameIndex);
-                  const label =
-                    item.names?.[locale] ||
-                    (item.wordId ? words.find((w) => w.id === item.wordId)?.spellings[locale] : '') ||
-                    '';
-
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => {
-                        if (item.wordId) openWord(item.wordId, category.id);
-                        else openCategory(category.id);
-                      }}
-                      accessibilityLabel={label || t('selectWord')}
-                      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    >
-                      <View style={[styles.imageWrap, { backgroundColor: colors.muted }]}>
-                        {item.image ? (
-                          <Image source={item.image} style={styles.image} contentFit="contain" />
-                        ) : item.swatch ? (
-                          <View
-                            style={[
-                              styles.swatch,
-                              { backgroundColor: item.swatch, borderColor: colors.border },
-                            ]}
-                          />
-                        ) : (
-                          <Text style={styles.emoji}>{item.emoji}</Text>
-                        )}
-                        {learned ? (
-                          <View style={[styles.lockBadge, { backgroundColor: '#E8F5E9' }]}>
-                            <Feather name="check" size={14} color="#2E7D32" />
-                          </View>
-                        ) : null}
-                      </View>
-                      <Text style={[styles.wordLabel, { color: colors.foreground }]} numberOfLines={1}>
-                        {label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
+      {selected ? (
+        <>
+          <View style={styles.titleRow}>
+            <Pressable
+              onPress={() => setActiveCategory(null)}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel={t('backToCategories')}
+            >
+              <Feather name="arrow-left" size={22} color={gameTheme.colors.ink} />
+            </Pressable>
+            <View style={[styles.titleEmoji, { backgroundColor: CATEGORY_COLORS[selected.id].bg }]}>
+              <Text style={styles.titleEmojiText}>{selected.emoji}</Text>
             </View>
-          );
-        })}
-      </ScrollView>
+            <View style={styles.titleCopy}>
+              <Text style={styles.title}>{t(selected.titleKey)}</Text>
+              <Text style={styles.subtitle}>{t('categoryWords')}</Text>
+            </View>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={[styles.wordGrid, { paddingBottom: insets.bottom + 126 }]}
+            showsVerticalScrollIndicator={false}
+          >
+            {selected.items.map((item) => {
+              const gameIndex = item.wordId ? wordIndexById.get(item.wordId) : undefined;
+              const learned = gameIndex !== undefined && completedLevels.includes(gameIndex);
+              const locked = gameIndex !== undefined && !isLevelUnlocked(gameIndex);
+              const label = item.names[locale];
+
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => item.wordId && !locked && openWord(item.wordId, selected.id)}
+                  disabled={locked}
+                  style={({ pressed }) => [
+                    styles.wordCard,
+                    locked && styles.lockedCard,
+                    pressed && styles.cardPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={locked ? `${label}, ${t('locked')}` : label}
+                  accessibilityState={{ disabled: locked }}
+                >
+                  <View style={[styles.wordVisual, { backgroundColor: `${CATEGORY_COLORS[selected.id].bg}1F` }]}>
+                    {item.swatch ? (
+                      <View style={[styles.swatch, { backgroundColor: item.swatch }]} />
+                    ) : (
+                      <Text style={styles.wordEmoji}>{item.emoji || '⭐'}</Text>
+                    )}
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        learned ? styles.learnedBadge : locked ? styles.lockBadge : styles.readyBadge,
+                      ]}
+                    >
+                      <Feather
+                        name={learned ? 'check' : locked ? 'lock' : 'play'}
+                        size={14}
+                        color={learned ? '#238A59' : locked ? '#8B809C' : '#FFFFFF'}
+                      />
+                    </View>
+                  </View>
+                  <Text style={styles.wordLabel} numberOfLines={1}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </>
+      ) : (
+        <>
+          <View style={styles.pageHeading}>
+            <Text style={styles.title}>{t('explore')}</Text>
+            <Text style={styles.subtitle}>{t('chooseCategory')}</Text>
+          </View>
+          <ScrollView
+            contentContainerStyle={[styles.categoryGrid, { paddingBottom: insets.bottom + 126 }]}
+            showsVerticalScrollIndicator={false}
+          >
+            {practiceWords.length > 0 ? (
+              <View style={styles.practiceSection}>
+                <View style={styles.practiceHeading}>
+                  <View style={styles.practiceIcon}>
+                    <Feather name="refresh-cw" size={19} color="#FFFFFF" />
+                  </View>
+                  <View style={styles.practiceCopy}>
+                    <Text style={styles.practiceTitle}>{t('forYouPractice')}</Text>
+                    <Text style={styles.practiceSubtitle}>{t('practiceSubtitle')}</Text>
+                  </View>
+                </View>
+                <View style={styles.practiceList}>
+                  {practiceWords.map(({ word }) => (
+                    <Pressable
+                      key={word.id}
+                      onPress={() => openWord(word.id, word.category)}
+                      style={({ pressed }) => [styles.practiceCard, pressed && styles.cardPressed]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${word.spellings[locale]}, ${t('practiceAgain')}`}
+                    >
+                      <View style={styles.practiceVisual}>
+                        <Text style={styles.practiceEmoji}>{word.emoji || '⭐'}</Text>
+                      </View>
+                      <Text style={styles.practiceWord} numberOfLines={1}>{word.spellings[locale]}</Text>
+                      <View style={styles.practicePlay}>
+                        <Feather name="play" size={15} color="#FFFFFF" />
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            {categories.map((category) => {
+              const color = CATEGORY_COLORS[category.id];
+              const indexes = category.items
+                .map((item) => item.wordId && wordIndexById.get(item.wordId))
+                .filter((index): index is number => index !== undefined);
+              const complete = indexes.filter((index) => completedLevels.includes(index)).length;
+
+              return (
+                <Pressable
+                  key={category.id}
+                  onPress={() => setActiveCategory(category.id)}
+                  style={({ pressed }) => [
+                    styles.categoryCard,
+                    { backgroundColor: color.bg, borderColor: color.border },
+                    pressed && styles.cardPressed,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(category.titleKey)}
+                >
+                  <View style={styles.highlight} />
+                  <Text style={styles.categoryEmoji}>{category.emoji}</Text>
+                  <Text style={styles.categoryTitle}>{t(category.titleKey)}</Text>
+                  <View style={styles.progressPill}>
+                    <Text style={styles.progressText}>
+                      {t('wordsProgress', { done: complete, total: indexes.length })}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </>
+      )}
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 20,
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+  root: { flex: 1 },
+  pageHeading: { paddingHorizontal: 20, marginBottom: 16 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 10, marginBottom: 16 },
+  backButton: {
+    width: 48,
+    height: 48,
     borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: gameTheme.colors.white,
+  },
+  titleEmoji: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  titleEmojiText: { fontSize: 28 },
+  titleCopy: { flex: 1 },
+  title: { color: gameTheme.colors.ink, fontSize: 24, fontWeight: '900' },
+  subtitle: { color: gameTheme.colors.inkSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 3 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 14 },
+  practiceSection: {
+    width: '100%',
+    backgroundColor: '#FFF8E8',
     borderWidth: 2,
-    borderBottomWidth: 6,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    borderColor: '#F0D9A8',
+    borderRadius: 26,
+    padding: 14,
+  },
+  practiceHeading: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  practiceIcon: { width: 38, height: 38, borderRadius: 14, backgroundColor: gameTheme.colors.coral, alignItems: 'center', justifyContent: 'center' },
+  practiceCopy: { flex: 1 },
+  practiceTitle: { color: gameTheme.colors.ink, fontSize: 17, fontWeight: '900' },
+  practiceSubtitle: { color: gameTheme.colors.inkSoft, fontSize: 11, lineHeight: 15, fontWeight: '700', marginTop: 2 },
+  practiceList: { gap: 8 },
+  practiceCard: { minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 18, backgroundColor: '#FFFFFF', paddingHorizontal: 10, borderWidth: 1, borderColor: '#F2E3C7' },
+  practiceVisual: { width: 42, height: 42, borderRadius: 14, backgroundColor: gameTheme.colors.skySoft, alignItems: 'center', justifyContent: 'center' },
+  practiceEmoji: { fontSize: 26 },
+  practiceWord: { flex: 1, color: gameTheme.colors.ink, fontSize: 15, fontWeight: '900', textTransform: 'capitalize' },
+  practicePlay: { width: 34, height: 34, borderRadius: 17, backgroundColor: gameTheme.colors.sky, alignItems: 'center', justifyContent: 'center' },
+  categoryCard: {
+    width: '47.8%',
+    minHeight: 170,
+    borderRadius: 28,
+    borderWidth: 3,
+    borderBottomWidth: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
     overflow: 'hidden',
   },
-  jellyHighlight: {
-    position: 'absolute',
-    top: 4,
-    left: '10%',
-    right: '10%',
-    height: 10,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    borderRadius: 5,
-  },
-  sectionHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    flexShrink: 1,
-  },
-  row: {
-    gap: 10,
-    paddingRight: 20,
-  },
-  card: {
-    width: 112,
-    borderRadius: 18,
-    borderWidth: 1,
+  highlight: { position: 'absolute', top: 5, left: 20, right: 20, height: 12, borderRadius: 6, backgroundColor: '#FFFFFF55' },
+  categoryEmoji: { fontSize: 54 },
+  categoryTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '900', marginTop: 8, textAlign: 'center' },
+  progressPill: { backgroundColor: '#FFFFFF33', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, marginTop: 8 },
+  progressText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
+  wordGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 12 },
+  wordCard: {
+    width: '48.2%',
+    minHeight: 150,
+    backgroundColor: gameTheme.colors.white,
+    borderWidth: 2,
+    borderColor: gameTheme.colors.outline,
+    borderRadius: 24,
     padding: 10,
     alignItems: 'center',
   },
-  imageWrap: {
-    width: '100%',
-    height: 84,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  image: {
-    width: '80%',
-    height: '80%',
-  },
-  emoji: {
-    fontSize: 40,
-  },
-  swatch: {
-    width: 48,
-    height: 48,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  lockBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    padding: 5,
-  },
-  wordLabel: {
-    fontSize: 13,
-    fontWeight: '800',
-    textAlign: 'center',
-    textTransform: 'capitalize',
-  },
+  lockedCard: { opacity: 0.58 },
+  cardPressed: { transform: [{ scale: 0.97 }, { translateY: 2 }] },
+  wordVisual: { width: '100%', height: 104, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  wordEmoji: { fontSize: 58 },
+  swatch: { width: 66, height: 66, borderRadius: 33, borderWidth: 3, borderColor: '#FFFFFF' },
+  statusBadge: { position: 'absolute', top: 7, right: 7, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  learnedBadge: { backgroundColor: gameTheme.colors.mintSoft },
+  lockBadge: { backgroundColor: '#F0ECF4' },
+  readyBadge: { backgroundColor: gameTheme.colors.sky },
+  wordLabel: { color: gameTheme.colors.ink, fontSize: 15, fontWeight: '900', textTransform: 'capitalize', marginTop: 8 },
 });

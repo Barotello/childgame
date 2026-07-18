@@ -18,7 +18,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
+import { Feather } from '@expo/vector-icons';
 import { useI18n } from '@/lib/i18n';
+import { speakWord } from '@/lib/speech';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -226,12 +229,14 @@ type Props = {
 };
 
 export default function OnboardingOverlay({ visible, onDone }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [step, setStep] = useState(0);
   const slideX = useSharedValue(0);
 
   const goNext = () => {
     if (step < STEPS.length - 1) {
+      const nextStep = STEPS[step + 1];
+      speakWord(`${t(nextStep.titleKey)}. ${t(nextStep.bodyKey)}`, locale);
       // Slide out left, advance, slide in from right
       slideX.value = withSequence(
         withTiming(-SCREEN_W, { duration: 220, easing: Easing.in(Easing.ease) }),
@@ -250,6 +255,13 @@ export default function OnboardingOverlay({ visible, onDone }: Props) {
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
+  const narration = `${t(current.titleKey)}. ${t(current.bodyKey)}`;
+
+  useEffect(() => {
+    if (!visible || step !== 0) return;
+    const timer = setTimeout(() => speakWord(narration, locale), 350);
+    return () => clearTimeout(timer);
+  }, [visible, step, locale, narration]);
 
   return (
     <Modal visible={visible} animationType="fade" statusBarTranslucent>
@@ -261,11 +273,39 @@ export default function OnboardingOverlay({ visible, onDone }: Props) {
 
         {/* Content */}
         <Animated.View style={[styles.content, slideStyle]}>
-          {current.custom ?? (
-            <Text style={styles.bigEmoji}>{current.emoji}</Text>
-          )}
-          <Text style={styles.title}>{t(current.titleKey)}</Text>
-          <Text style={styles.body}>{t(current.bodyKey)}</Text>
+          <View style={styles.narratorRow}>
+            <Pressable
+              onPress={() => speakWord(narration, locale)}
+              accessibilityRole="button"
+              accessibilityLabel={narration}
+              style={({ pressed }) => [styles.mascotButton, pressed && styles.mascotPressed]}
+            >
+              <Image
+                source={require('../assets/images/mino.png')}
+                style={styles.mascot}
+                contentFit="contain"
+              />
+              <View style={styles.speakerBadge}>
+                <Text style={styles.speakerIcon}>♪</Text>
+              </View>
+            </Pressable>
+            <View style={styles.speechCard}>
+              <View style={styles.speechTail} />
+              <Text style={styles.minoLabel}>{t('minoSays')}</Text>
+              <Text style={styles.title}>{t(current.titleKey)}</Text>
+              <Text style={styles.body}>{t(current.bodyKey)}</Text>
+              <Pressable
+                onPress={() => speakWord(narration, locale)}
+                style={({ pressed }) => [styles.listenButton, pressed && styles.listenPressed]}
+                accessibilityRole="button"
+                accessibilityLabel={t('listenToMino')}
+              >
+                <Feather name="volume-2" size={16} color="#118AB2" />
+                <Text style={styles.listenText}>{t('listenToMino')}</Text>
+              </Pressable>
+            </View>
+          </View>
+          {current.custom ? <View style={styles.demoWrap}>{current.custom}</View> : null}
         </Animated.View>
 
         {/* Dots */}
@@ -298,25 +338,82 @@ const styles = StyleSheet.create({
   root: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   skipBtn: { position: 'absolute', top: 56, right: 24 },
   skipText: { color: 'rgba(255,255,255,0.8)', fontSize: 15, fontWeight: '600' },
-  content: { alignItems: 'center', width: '100%', marginBottom: 32 },
-  bigEmoji: { fontSize: 90, marginBottom: 16 },
+  content: { alignItems: 'center', width: '100%', marginBottom: 24 },
+  narratorRow: { width: '100%', alignItems: 'center', gap: 8 },
+  mascotButton: {
+    width: 224,
+    height: 300,
+    borderRadius: 48,
+    backgroundColor: 'rgba(255,255,255,0.24)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mascotPressed: { transform: [{ scale: 0.97 }] },
+  mascot: { width: 208, height: 284 },
+  speakerBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  speakerIcon: { color: '#118AB2', fontSize: 18, fontWeight: '900' },
+  speechCard: {
+    width: '100%',
+    minHeight: 154,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    justifyContent: 'center',
+  },
+  speechTail: {
+    position: 'absolute',
+    top: -8,
+    alignSelf: 'center',
+    width: 18,
+    height: 18,
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '45deg' }],
+  },
+  minoLabel: { color: '#D86B3F', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  demoWrap: {
+    marginTop: 10,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+  },
   title: {
-    fontSize: 28,
+    fontSize: 21,
     fontWeight: '900',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 12,
-    textShadowColor: 'rgba(0,0,0,0.15)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    color: '#3D315B',
+    marginTop: 3,
+    marginBottom: 6,
   },
   body: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.92)',
-    textAlign: 'center',
-    lineHeight: 26,
+    color: '#756A8D',
+    lineHeight: 20,
   },
+  listenButton: {
+    minHeight: 34,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 17,
+    backgroundColor: '#E8F6FF',
+    paddingHorizontal: 11,
+    marginTop: 10,
+  },
+  listenPressed: { transform: [{ scale: 0.97 }] },
+  listenText: { color: '#118AB2', fontSize: 11, fontWeight: '900' },
   dots: { flexDirection: 'row', gap: 8, marginBottom: 36 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   dotActive: { backgroundColor: '#fff', width: 28 },

@@ -13,7 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 
 export const DEFAULT_TILE_SIZE = 52;
-export const MIN_TILE_SIZE = 44;
+export const MIN_TILE_SIZE = 48;
 
 export type DropResult = { correct: boolean; dx: number; dy: number };
 
@@ -25,6 +25,7 @@ type LetterTileProps = {
   onAttemptDrop: (letter: string, centerX: number, centerY: number) => DropResult;
   /** Tap places letter into the next matching empty slot (no drag required). */
   onTapPlace?: (letter: string) => boolean;
+  onFeedback?: (result: 'correct' | 'wrong') => void;
 };
 
 export default function LetterTile({
@@ -34,6 +35,7 @@ export default function LetterTile({
   size = DEFAULT_TILE_SIZE,
   onAttemptDrop,
   onTapPlace,
+  onFeedback,
 }: LetterTileProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -64,16 +66,16 @@ export default function LetterTile({
 
   const applyWrong = () => {
     translateX.value = withSequence(
-      withTiming(-12, { duration: 50 }),
-      withTiming(12, { duration: 50 }),
-      withTiming(-12, { duration: 50 }),
-      withTiming(12, { duration: 50 }),
+      withTiming(-8, { duration: 65 }),
+      withTiming(8, { duration: 65 }),
+      withTiming(-5, { duration: 65 }),
+      withTiming(5, { duration: 65 }),
       withSpring(0),
     );
     translateY.value = withSpring(0);
     playWrongSound();
     if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
   };
 
@@ -82,8 +84,10 @@ export default function LetterTile({
 
     if (result.correct) {
       applyCorrect(result.dx, result.dy);
+      onFeedback?.('correct');
     } else {
       applyWrong();
+      onFeedback?.('wrong');
     }
   };
 
@@ -99,8 +103,10 @@ export default function LetterTile({
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
+      onFeedback?.('correct');
     } else {
       applyWrong();
+      onFeedback?.('wrong');
     }
   };
 
@@ -169,6 +175,7 @@ export default function LetterTile({
         pointerEvents={locked ? 'none' : 'auto'}
         accessibilityRole="button"
         accessibilityLabel={letter}
+        accessibilityState={{ disabled: locked }}
       >
         <Text style={[styles.letter, { fontSize: size * 0.45 }]}>{letter}</Text>
       </Animated.View>
@@ -181,9 +188,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.58)',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   letter: {
     fontWeight: '800',

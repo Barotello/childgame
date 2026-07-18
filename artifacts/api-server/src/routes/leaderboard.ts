@@ -1,7 +1,11 @@
 import { Router, type IRouter } from "express";
-import { desc } from "drizzle-orm";
+import { desc, gt, sql } from "drizzle-orm";
 import { db, leaderboardEntriesTable } from "@workspace/db";
-import { ListLeaderboardEntriesResponse, LeaderboardEntryInput, UpsertLeaderboardEntryResponse } from "@workspace/api-zod";
+import {
+  ListLeaderboardEntriesResponse,
+  UpsertLeaderboardEntryBody,
+  UpsertLeaderboardEntryResponse,
+} from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
@@ -29,7 +33,7 @@ router.get("/leaderboard/entries", async (req, res): Promise<void> => {
 });
 
 router.post("/leaderboard/entries", async (req, res): Promise<void> => {
-  const parsed = LeaderboardEntryInput.safeParse(req.body);
+  const parsed = UpsertLeaderboardEntryBody.safeParse(req.body);
   if (!parsed.success) {
     req.log.warn({ errors: parsed.error.message }, "Invalid leaderboard entry input");
     res.status(400).json({ error: parsed.error.message });
@@ -47,16 +51,11 @@ router.post("/leaderboard/entries", async (req, res): Promise<void> => {
     })
     .returning();
 
-  const higherCount = await db
-    .select()
+  const [higherCount] = await db
+    .select({ count: sql<number>`count(*)` })
     .from(leaderboardEntriesTable)
-    .where(undefined);
-
-  const allRows = await db
-    .select()
-    .from(leaderboardEntriesTable)
-    .orderBy(desc(leaderboardEntriesTable.coins));
-  const rank = allRows.findIndex((r) => r.id === row.id) + 1;
+    .where(gt(leaderboardEntriesTable.coins, row.coins));
+  const rank = Number(higherCount.count) + 1;
 
   res.json(
     UpsertLeaderboardEntryResponse.parse({

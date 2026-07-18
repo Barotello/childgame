@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WordRound from '@/components/WordRound';
+import PictureChoiceRound from '@/components/PictureChoiceRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
 import TutorialOverlay from '@/components/TutorialOverlay';
@@ -15,9 +16,11 @@ import { useColors } from '@/hooks/useColors';
 import { playCelebrateSound } from '@/lib/sounds';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
+import { gameTheme } from '@/constants/gameTheme';
+import { learningActivityForPosition, WORDS_PER_CHAPTER } from '@/constants/curriculum';
 
 const COINS_PER_LEVEL = 15;
-const TUTORIAL_KEY = 'kelime-bulmaca:tutorial-seen:v1';
+const TUTORIAL_KEY = 'kelime-bulmaca:tutorial-seen:v3';
 
 export default function PlayScreen() {
   const colors = useColors();
@@ -27,6 +30,7 @@ export default function PlayScreen() {
     currentLevel,
     totalLevels,
     selectedCategory,
+    completedLevels,
     completeLevel,
     setCurrentLevel,
   } = useGameState();
@@ -34,10 +38,13 @@ export default function PlayScreen() {
   const { locale } = useI18n();
   const [celebrating, setCelebrating] = useState(false);
   const [categoryComplete, setCategoryComplete] = useState(false);
+  const [chapterComplete, setChapterComplete] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialChecked, setTutorialChecked] = useState(false);
 
   useEffect(() => {
     setCategoryComplete(false);
+    setChapterComplete(false);
   }, [selectedCategory]);
 
   useEffect(() => {
@@ -46,11 +53,13 @@ export default function PlayScreen() {
       if (!val) setShowTutorial(true);
     }).catch(() => {
       setShowTutorial(true);
+    }).finally(() => {
+      setTutorialChecked(true);
     });
   }, []);
 
-  const dismissTutorial = () => {
-    AsyncStorage.setItem(TUTORIAL_KEY, '1').catch(() => {});
+  const dismissTutorial = (dontShowAgain: boolean) => {
+    if (dontShowAgain) AsyncStorage.setItem(TUTORIAL_KEY, '1').catch(() => {});
     setShowTutorial(false);
   };
 
@@ -59,15 +68,20 @@ export default function PlayScreen() {
   const categoryWords = words.filter((w) => w.category === selectedCategory);
   const currentCategoryIndex = categoryWords.findIndex((w) => w.id === currentWord?.id);
   const hasCategoryWords = categoryWords.length > 0;
+  const scheduledActivity = learningActivityForPosition(Math.max(0, currentCategoryIndex));
+  const activity = currentWord?.pictureReady === false ? 'spell' : scheduledActivity;
+  const chapterStart = Math.floor(Math.max(0, currentCategoryIndex) / WORDS_PER_CHAPTER) * WORDS_PER_CHAPTER;
+  const chapterWords = categoryWords.slice(chapterStart, chapterStart + WORDS_PER_CHAPTER);
+  const currentChapterIndex = Math.max(0, currentCategoryIndex - chapterStart);
 
   const progressValue = useSharedValue(0);
 
   useEffect(() => {
     const target = hasCategoryWords
-      ? (currentCategoryIndex + 1) / categoryWords.length
+      ? (currentChapterIndex + 1) / chapterWords.length
       : (currentLevel + 1) / totalLevels;
     progressValue.value = withSpring(target, { damping: 14, stiffness: 90 });
-  }, [currentCategoryIndex, currentLevel, hasCategoryWords, categoryWords.length, totalLevels]);
+  }, [currentChapterIndex, currentLevel, hasCategoryWords, chapterWords.length, totalLevels]);
 
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progressValue.value * 100}%`,
@@ -76,6 +90,7 @@ export default function PlayScreen() {
   const latestRef = useRef({ currentLevel, selectedCategory });
   latestRef.current = { currentLevel, selectedCategory };
   const completingRef = useRef(false);
+  const pendingAdvanceRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     completingRef.current = false;
@@ -95,11 +110,30 @@ export default function PlayScreen() {
       const wordsInCategory = words.filter((w) => w.category === category);
       const indexInCategory = wordsInCategory.findIndex((w) => w.id === words[level]?.id);
       const nextInCategory = indexInCategory >= 0 ? wordsInCategory[indexInCategory + 1] : undefined;
-      if (nextInCategory) {
+      const reachesChapterBoundary =
+        Boolean(nextInCategory) && (indexInCategory + 1) % WORDS_PER_CHAPTER === 0;
+
+      if (reachesChapterBoundary) {
+        const chapterEntries = wordsInCategory.slice(
+          Math.floor(indexInCategory / WORDS_PER_CHAPTER) * WORDS_PER_CHAPTER,
+          Math.floor(indexInCategory / WORDS_PER_CHAPTER) * WORDS_PER_CHAPTER + WORDS_PER_CHAPTER,
+        );
+        const chapterFinished = chapterEntries.every((word) => {
+          const globalIndex = words.findIndex((candidate) => candidate.id === word.id);
+          return completedLevels.includes(globalIndex) || (opts?.award !== false && globalIndex === level);
+        });
+        if (chapterFinished) setChapterComplete(true);
+        else router.navigate('/category');
+      } else if (nextInCategory) {
         const nextIndex = words.findIndex((w) => w.id === nextInCategory.id);
         setCurrentLevel(nextIndex);
       } else {
-        setCategoryComplete(true);
+        const categoryFinished = wordsInCategory.every((word) => {
+          const globalIndex = words.findIndex((candidate) => candidate.id === word.id);
+          return completedLevels.includes(globalIndex) || (opts?.award !== false && globalIndex === level);
+        });
+        if (categoryFinished) setCategoryComplete(true);
+        else router.navigate('/category');
       }
       completingRef.current = false;
     };
@@ -107,7 +141,7 @@ export default function PlayScreen() {
     if (opts?.celebrate !== false) {
       setCelebrating(true);
       playCelebrateSound();
-      setTimeout(goNext, 1100);
+      pendingAdvanceRef.current = goNext;
     } else {
       goNext();
     }
@@ -115,36 +149,80 @@ export default function PlayScreen() {
 
   const handleComplete = () => advanceToNext({ celebrate: true, award: true });
   const handleSkip = () => advanceToNext({ celebrate: false, award: false });
+  const handleCelebrationComplete = () => {
+    const advance = pendingAdvanceRef.current;
+    pendingAdvanceRef.current = null;
+    advance?.();
+  };
 
   const roundKey =
     hasCategoryWords && currentWord?.category === selectedCategory
-      ? `${currentWord.id}-${currentLevel}-${locale}`
+      ? `${currentWord.id}-${currentLevel}-${locale}-${activity}`
       : 'empty';
 
-  // Bottom padding to clear the tab bar (88 height + 16 gap)
-  const bottomPad = Math.max(insets.bottom, 12) + 104;
+  const bottomPad = Math.max(insets.bottom, 12) + 16;
 
   return (
     <LinearGradient
-      colors={['#FFF8EC', '#FFE8CF']}
+      colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
       style={[styles.root, { paddingTop: insets.top + 8, paddingBottom: bottomPad }]}
     >
-      <GameHeader onBack={() => router.navigate('/library')} />
+      <View style={styles.backgroundShapes} pointerEvents="none">
+        <View style={[styles.bubble, styles.bubbleSky]} />
+        <View style={[styles.bubble, styles.bubbleSun]} />
+        <View style={[styles.bubble, styles.bubbleMint]} />
+      </View>
+      <GameHeader onBack={() => router.navigate('/category')} />
 
       <View style={styles.levelRow}>
-        <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
+        <View style={[styles.progressTrack, { backgroundColor: '#FFFFFFB8' }]}>
           <Animated.View
-            style={[styles.progressFill, { backgroundColor: colors.primary }, progressStyle]}
+            style={[styles.progressFill, { backgroundColor: gameTheme.colors.coral }, progressStyle]}
           />
           <Text style={[styles.progressLabel, { color: colors.foreground }]}>
             {hasCategoryWords
-              ? t('level', { current: currentCategoryIndex + 1, total: categoryWords.length })
+              ? t('level', { current: currentChapterIndex + 1, total: chapterWords.length })
               : t('level', { current: currentLevel + 1, total: totalLevels })}
+          </Text>
+        </View>
+        <View style={styles.activityPill}>
+          <Feather
+            name={activity === 'spell' ? 'edit-3' : activity === 'listen' ? 'headphones' : 'image'}
+            size={15}
+            color={gameTheme.colors.ink}
+          />
+          <Text style={styles.activityText}>
+            {t(
+              activity === 'spell'
+                ? 'activitySpell'
+                : activity === 'listen'
+                  ? 'activityListen'
+                  : 'activityPicture',
+            )}
           </Text>
         </View>
       </View>
 
-      {categoryComplete ? (
+      {!tutorialChecked || showTutorial ? (
+        <View style={styles.tutorialPlaceholder} />
+      ) : chapterComplete ? (
+        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Feather name="star" size={58} color={gameTheme.colors.sunshine} />
+          <Text style={[styles.emptyTitle, { color: colors.foreground, textAlign: 'center', fontSize: 22 }]}>
+            {t('chapterCompleteTitle')}
+          </Text>
+          <Text style={[styles.emptyBody, { color: colors.mutedForeground, marginTop: 4, marginBottom: 20 }]}>
+            {t('chapterCompleteBody')}
+          </Text>
+          <Pressable
+            style={[styles.hintButton, { backgroundColor: gameTheme.colors.sky, width: '100%', paddingVertical: 16 }]}
+            onPress={() => router.navigate('/category')}
+          >
+            <Feather name="map" size={22} color="#FFFFFF" />
+            <Text style={[styles.hintText, { color: '#FFFFFF', fontSize: 17 }]}>{t('backToChapters')}</Text>
+          </Pressable>
+        </View>
+      ) : categoryComplete ? (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="award" size={56} color="#FFC93C" />
           <Text style={[styles.emptyTitle, { color: colors.foreground, textAlign: 'center', fontSize: 22 }]}>
@@ -169,16 +247,25 @@ export default function PlayScreen() {
             <Pressable
               style={[styles.hintButton, { backgroundColor: '#56A8DF', width: '100%', paddingVertical: 16 }]}
               onPress={() => {
-                router.navigate('/library');
+                router.navigate('/category');
               }}
             >
               <Feather name="book-open" size={24} color="#FFFFFF" />
-              <Text style={[styles.hintText, { color: '#FFFFFF', fontSize: 18 }]}>{t('library')}</Text>
+              <Text style={[styles.hintText, { color: '#FFFFFF', fontSize: 18 }]}>{t('backToChapters')}</Text>
             </Pressable>
           </View>
         </View>
       ) : hasCategoryWords && currentWord?.category === selectedCategory ? (
-        <WordRound key={roundKey} word={currentWord} onComplete={handleComplete} onSkip={handleSkip} />
+        activity === 'spell' ? (
+          <WordRound key={roundKey} word={currentWord} onComplete={handleComplete} onSkip={handleSkip} />
+        ) : (
+          <PictureChoiceRound
+            key={roundKey}
+            word={currentWord}
+            mode={activity}
+            onComplete={handleComplete}
+          />
+        )
       ) : (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="book-open" size={40} color={colors.secondary} />
@@ -198,10 +285,14 @@ export default function PlayScreen() {
       )}
 
       {celebrating && currentWord ? (
-        <Celebration word={currentWord} coinsEarned={COINS_PER_LEVEL} />
+        <Celebration
+          word={currentWord}
+          coinsEarned={COINS_PER_LEVEL}
+          onNarrationComplete={handleCelebrationComplete}
+        />
       ) : null}
 
-      <TutorialOverlay visible={showTutorial} onDismiss={dismissTutorial} />
+      <TutorialOverlay visible={tutorialChecked && showTutorial} onDismiss={dismissTutorial} />
     </LinearGradient>
   );
 }
@@ -210,6 +301,37 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     overflow: 'visible',
+  },
+  tutorialPlaceholder: { flex: 1 },
+  backgroundShapes: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  bubble: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.22,
+  },
+  bubbleSky: {
+    width: 180,
+    height: 180,
+    backgroundColor: gameTheme.colors.sky,
+    top: 80,
+    right: -105,
+  },
+  bubbleSun: {
+    width: 130,
+    height: 130,
+    backgroundColor: gameTheme.colors.sunshine,
+    bottom: 180,
+    left: -82,
+  },
+  bubbleMint: {
+    width: 90,
+    height: 90,
+    backgroundColor: gameTheme.colors.mint,
+    bottom: 60,
+    right: -55,
   },
   levelRow: {
     flexDirection: 'row',
@@ -220,10 +342,12 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     flex: 1,
-    height: 26,
-    borderRadius: 13,
+    height: 28,
+    borderRadius: 14,
     overflow: 'hidden',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#F2DBC0',
   },
   progressFill: {
     position: 'absolute',
@@ -235,7 +359,25 @@ const styles = StyleSheet.create({
   progressLabel: {
     textAlign: 'center',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '900',
+  },
+  activityPill: {
+    minHeight: 38,
+    maxWidth: 142,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFFD9',
+    borderWidth: 2,
+    borderColor: '#F2DBC0',
+    paddingHorizontal: 12,
+  },
+  activityText: {
+    color: gameTheme.colors.ink,
+    fontSize: 11,
+    fontWeight: '900',
   },
   emptyCard: {
     flex: 1,

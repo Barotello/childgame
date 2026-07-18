@@ -13,6 +13,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import ScreenTimeReminder from '@/components/ScreenTimeReminder';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -21,6 +22,7 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="category" />
       <Stack.Screen name="(tabs)" />
     </Stack>
   );
@@ -49,6 +51,7 @@ export default function RootLayout() {
           <I18nProvider>
             <GameStateProvider>
               <RootLayoutNav />
+              <ScreenTimeReminder />
             </GameStateProvider>
           </I18nProvider>
         </GestureHandlerRootView>
@@ -56,4 +59,3 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
-

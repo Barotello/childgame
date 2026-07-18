@@ -13,8 +13,11 @@ import Animated, {
 import type { WordItem } from '@/constants/words';
 import { translations } from '@/constants/translations';
 import { useI18n } from '@/lib/i18n';
+import { Feather } from '@expo/vector-icons';
+import { gameTheme } from '@/constants/gameTheme';
+import { speakTextAndWait } from '@/lib/speech';
 const PARTICLE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#38C6B0', '#FF8FB1'];
-const PARTICLE_COUNT = 14;
+const PARTICLE_COUNT = 22;
 
 type Particle = { angle: number; distance: number; color: string; delay: number };
 
@@ -50,20 +53,49 @@ function ConfettiParticle({ particle }: { particle: Particle }) {
 type CelebrationProps = {
   word: WordItem;
   coinsEarned?: number;
+  onNarrationComplete?: () => void;
 };
 
-export default function Celebration({ word, coinsEarned }: CelebrationProps) {
+export default function Celebration({ word, coinsEarned, onNarrationComplete }: CelebrationProps) {
   const { locale, t } = useI18n();
   const praiseList = translations[locale].praise;
   const praise = useMemo(() => praiseList[Math.floor(Math.random() * praiseList.length)], [praiseList]);
   const particles = useMemo(buildParticles, []);
   const scale = useSharedValue(0.6);
   const wordLabel = word.spellings[locale].toLocaleUpperCase(locale);
+  const factKey = {
+    animals: 'factAnimals',
+    fruits: 'factFruits',
+    numbers: 'factNumbers',
+    colors: 'factColors',
+    flags: 'factFlags',
+    body: 'factBody',
+  }[word.category] as
+    | 'factAnimals'
+    | 'factFruits'
+    | 'factNumbers'
+    | 'factColors'
+    | 'factFlags'
+    | 'factBody';
+  const fact = t(factKey, { word: word.spellings[locale] });
 
   useEffect(() => {
     scale.value = withSpring(1, { damping: 12, stiffness: 100 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(() => {
+      speakTextAndWait(fact, locale).then(() => {
+        if (active) onNarrationComplete?.();
+      });
+    }, 450);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [fact, locale, onNarrationComplete]);
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -77,6 +109,9 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
         ))}
       </View>
       <Animated.View style={[styles.card, cardStyle]}>
+        <View style={styles.successBadge}>
+          <Feather name="check" size={26} color="#FFFFFF" />
+        </View>
         {word.emoji ? (
           <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
         ) : word.swatch ? (
@@ -86,6 +121,10 @@ export default function Celebration({ word, coinsEarned }: CelebrationProps) {
         )}
         <Text style={styles.word}>{wordLabel}</Text>
         <Text style={styles.praise}>{praise}</Text>
+        <View style={styles.factPill}>
+          <Feather name="volume-2" size={16} color={gameTheme.colors.sky} />
+          <Text style={styles.fact}>{fact}</Text>
+        </View>
         {coinsEarned ? <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text> : null}
       </Animated.View>
     </View>
@@ -97,7 +136,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(59,47,99,0.35)',
+    backgroundColor: 'rgba(61,49,91,0.42)',
   },
   particleField: {
     position: 'absolute',
@@ -110,21 +149,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 12,
     height: 12,
-    borderRadius: 6,
+    borderRadius: 3,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 32,
-    width: 280,
-    aspectRatio: 1,
+    borderRadius: 36,
+    width: 300,
+    minHeight: 370,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: 22,
     gap: 8,
+    borderWidth: 5,
+    borderColor: '#FFF1C7',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    shadowOpacity: 0.24,
+    shadowRadius: 22,
     elevation: 10,
   },
   image: {
@@ -132,20 +173,56 @@ const styles = StyleSheet.create({
     height: 140,
   },
   word: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#3B2F63',
+    fontSize: 30,
+    fontWeight: '900',
+    color: gameTheme.colors.ink,
     letterSpacing: 2,
   },
   praise: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FF6F59',
+    fontSize: 21,
+    fontWeight: '900',
+    color: gameTheme.colors.coral,
   },
   coins: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#B98A00',
+    color: '#9A7200',
     marginTop: 2,
+  },
+  factPill: {
+    maxWidth: '96%',
+    minHeight: 38,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: gameTheme.colors.skySoft,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  fact: {
+    flexShrink: 1,
+    color: gameTheme.colors.ink,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  successBadge: {
+    position: 'absolute',
+    top: -26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: gameTheme.colors.mint,
+    borderWidth: 5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1F8A55',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.24,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

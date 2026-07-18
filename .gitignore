@@ -10,6 +10,7 @@ out-tsc
 
 # dependencies
 node_modules
+.tools/
 
 # IDEs and editors
 /.idea

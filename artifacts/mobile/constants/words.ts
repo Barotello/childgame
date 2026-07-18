@@ -1,5 +1,6 @@
 import { type CategoryId } from './library';
 import { type Locale } from './translations';
+import { expandedWords } from './expandedWords';
 
 export type WordItem = {
   id: string;
@@ -9,66 +10,77 @@ export type WordItem = {
   image?: any;
   emoji?: string;
   swatch?: string;
+  /** False when the fallback artwork is not distinct enough for a picture-choice round. */
+  pictureReady?: boolean;
 };
 
 /**
  * Kid-friendly word list (ages 4–7): 2–7 letters, no spaces,
  * no multi-word names, vegetables removed from fruits, flags capped.
  */
-const words: WordItem[] = [
+const baseWords: WordItem[] = [
   {
     id: 'ari',
     spellings: { tr: 'arı', en: 'bee', fr: 'abeille', es: 'abeja', it: 'ape', de: 'biene' },
     category: 'animals',
     image: require('../assets/images/word-ari.png'),
+    emoji: '🐝',
   },
   {
     id: 'ayi',
     spellings: { tr: 'ayı', en: 'bear', fr: 'ours', es: 'oso', it: 'orso', de: 'bär' },
     category: 'animals',
     image: require('../assets/images/word-ayi.png'),
+    emoji: '🐻',
   },
   {
     id: 'balik',
     spellings: { tr: 'balık', en: 'fish', fr: 'poisson', es: 'pez', it: 'pesce', de: 'fisch' },
     category: 'animals',
     image: require('../assets/images/word-balik.png'),
+    emoji: '🐟',
   },
   {
     id: 'fil',
     spellings: { tr: 'fil', en: 'fil', fr: 'fil', es: 'fil', it: 'fil', de: 'fil' },
     category: 'animals',
     image: require('../assets/images/word-fil.png'),
+    emoji: '🐘',
   },
   {
     id: 'inek',
     spellings: { tr: 'inek', en: 'cow', fr: 'vache', es: 'vaca', it: 'vacca', de: 'kuh' },
     category: 'animals',
     image: require('../assets/images/word-inek.png'),
+    emoji: '🐄',
   },
   {
     id: 'kedi',
     spellings: { tr: 'kedi', en: 'cat', fr: 'chat', es: 'gato', it: 'gatto', de: 'katze' },
     category: 'animals',
     image: require('../assets/images/word-kedi.png'),
+    emoji: '🐱',
   },
   {
     id: 'kus',
     spellings: { tr: 'kuş', en: 'bird', fr: 'oiseau', es: 'pájaro', it: 'uccello', de: 'vogel' },
     category: 'animals',
     image: require('../assets/images/word-kus.png'),
+    emoji: '🐦',
   },
   {
     id: 'tavuk',
     spellings: { tr: 'tavuk', en: 'chicken', fr: 'poulet', es: 'pollo', it: 'pollo', de: 'huhn' },
     category: 'animals',
     image: require('../assets/images/word-tavuk.png'),
+    emoji: '🐔',
   },
   {
     id: 'ordek',
     spellings: { tr: 'ördek', en: 'duck', fr: 'canard', es: 'pato', it: 'anatra', de: 'ente' },
     category: 'animals',
     image: require('../assets/images/word-ordek.png'),
+    emoji: '🦆',
   },
   {
     id: 'anim_lion',
@@ -195,6 +207,7 @@ const words: WordItem[] = [
     spellings: { tr: 'elma', en: 'apple', fr: 'pomme', es: 'manzana', it: 'mela', de: 'apfel' },
     category: 'fruits',
     image: require('../assets/images/word-elma.png'),
+    emoji: '🍎',
   },
   {
     id: 'fruit_melon',
@@ -469,5 +482,8 @@ const words: WordItem[] = [
     emoji: '🦱',
   },
 ];
+
+// Expansion packs are appended so persisted numeric progress for existing words stays valid.
+const words: WordItem[] = [...baseWords, ...expandedWords];
 
 export default words;
