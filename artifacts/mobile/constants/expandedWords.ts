@@ -262,9 +262,30 @@ const EXISTING_FLAG_IDS = new Set([
   'flag_eg', 'flag_np', 'flag_pe', 'flag_pl', 'flag_cn', 'flag_cl',
 ]);
 
+/**
+ * Curated starter expansion for ages 4–7.
+ *
+ * The larger source lists stay above as an editorial backlog, but are not
+ * shipped in the learning path until their translations, artwork and reading
+ * difficulty have been reviewed. Quantity must not outrank recognisability.
+ */
 export const expandedWords: WordItem[] = [
-  ...simpleWords('animals', ANIMALS),
-  ...simpleWords('fruits', FRUITS, false),
-  ...NUMBER_WORDS,
-  ...FLAG_WORDS.filter((word) => !EXISTING_FLAG_IDS.has(word.id)),
+  ...simpleWords(
+    'animals',
+    ANIMALS.filter(([id]) => [
+      'anim_rabbit', 'anim_deer', 'anim_goat', 'anim_sheep', 'anim_camel',
+      'anim_donkey', 'anim_zebra', 'anim_snake', 'anim_frog', 'anim_seal',
+      'anim_goose',
+    ].includes(id)),
+  ),
+  ...simpleWords(
+    'fruits',
+    FRUITS.filter(([id]) => [
+      'fruit_apricot', 'fruit_pear', 'fruit_peach', 'fruit_cherry',
+      'fruit_orange', 'fruit_fig', 'fruit_plum', 'fruit_avocado',
+      'fruit_papaya', 'fruit_guava', 'fruit_date', 'fruit_quince',
+      'fruit_mulberry',
+    ].includes(id)),
+    false,
+  ),
 ];

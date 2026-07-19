@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '@/components/GameHeader';
@@ -138,6 +138,9 @@ export default function ParentCenterScreen() {
                   key={lang}
                   onPress={() => setLocale(lang)}
                   style={[styles.languageButton, selected && styles.languageSelected]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: selected }}
+                  accessibilityLabel={LOCALE_LABELS[lang]}
                 >
                   <Text style={styles.flag}>{LOCALE_FLAGS[lang]}</Text>
                   <Text style={styles.languageLabel}>{LOCALE_LABELS[lang]}</Text>
@@ -185,7 +188,13 @@ function Section({ icon, title, children }: { icon: keyof typeof Feather.glyphMa
 
 function ChoiceButton({ selected, label, onPress }: { selected: boolean; label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={[styles.choice, selected && styles.choiceSelected]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.choice, selected && styles.choiceSelected]}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={label}
+    >
       <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text>
     </Pressable>
   );
@@ -193,7 +202,14 @@ function ChoiceButton({ selected, label, onPress }: { selected: boolean; label: 
 
 function PurchaseRow({ label, price, disabled, onPress }: { label: string; price: number; disabled: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} style={[styles.purchaseRow, disabled && styles.disabled]}>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={[styles.purchaseRow, disabled && styles.disabled]}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      accessibilityLabel={`${label}, ${price}`}
+    >
       <Text style={styles.purchaseLabel}>{label}</Text>
       <View style={styles.priceBadge}><Feather name="star" size={13} color="#7B5A00" /><Text style={styles.price}>{price}</Text></View>
     </Pressable>

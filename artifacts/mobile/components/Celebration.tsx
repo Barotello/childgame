@@ -13,7 +13,7 @@ import Animated, {
 import type { WordItem } from '@/constants/words';
 import { translations } from '@/constants/translations';
 import { useI18n } from '@/lib/i18n';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
 import { speakTextAndWait } from '@/lib/speech';
 const PARTICLE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#38C6B0', '#FF8FB1'];

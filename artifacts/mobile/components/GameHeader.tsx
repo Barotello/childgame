@@ -1,6 +1,7 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
+import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
@@ -24,9 +25,19 @@ export default function GameHeader({ onBack, onParentPress }: GameHeaderProps = 
             <Feather name="arrow-left" size={24} color={colors.primary} />
           </Pressable>
         )}
-        <View style={[styles.avatar, { backgroundColor: colors.muted }]}>
+        <Pressable
+          onPress={() => router.replace('/(tabs)/journey')}
+          style={({ pressed }) => [
+            styles.avatar,
+            { backgroundColor: colors.muted },
+            pressed && styles.avatarPressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t('backToHome')}
+          hitSlop={8}
+        >
           <Image source={require('../assets/images/icon.png')} style={styles.avatarImage} />
-        </View>
+        </Pressable>
       </View>
 
       <View style={styles.actions}>
@@ -76,6 +87,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
   },
+  avatarPressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
   backBtn: {
     width: gameTheme.touchTarget,
     height: gameTheme.touchTarget,

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { AppState, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
@@ -9,12 +9,27 @@ export default function ScreenTimeReminder() {
   const { screenTimeMinutes } = useGameState();
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      setAppActive(state === 'active');
+    });
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!appActive) return;
     setVisible(false);
     const timeout = setTimeout(() => setVisible(true), screenTimeMinutes * 60 * 1000);
     return () => clearTimeout(timeout);
-  }, [screenTimeMinutes]);
+  }, [appActive, cycle, screenTimeMinutes]);
+
+  const continueAfterBreak = () => {
+    setVisible(false);
+    setCycle((value) => value + 1);
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -23,7 +38,12 @@ export default function ScreenTimeReminder() {
           <View style={styles.icon}><Feather name="sun" size={36} color="#A67500" /></View>
           <Text style={styles.title}>{t('breakTimeTitle')}</Text>
           <Text style={styles.body}>{t('breakTimeBody')}</Text>
-          <Pressable onPress={() => setVisible(false)} style={styles.button}>
+          <Pressable
+            onPress={continueAfterBreak}
+            style={styles.button}
+            accessibilityRole="button"
+            accessibilityLabel={t('breakTimeButton')}
+          >
             <Text style={styles.buttonText}>{t('breakTimeButton')}</Text>
           </Pressable>
         </View>

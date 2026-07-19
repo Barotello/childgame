@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,7 +10,7 @@ import WordRound from '@/components/WordRound';
 import PictureChoiceRound from '@/components/PictureChoiceRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
-import TutorialOverlay from '@/components/TutorialOverlay';
+import InstructionVideoOverlay from '@/components/InstructionVideoOverlay';
 import words from '@/constants/words';
 import { useColors } from '@/hooks/useColors';
 import { playCelebrateSound } from '@/lib/sounds';
@@ -20,7 +20,7 @@ import { gameTheme } from '@/constants/gameTheme';
 import { learningActivityForPosition, WORDS_PER_CHAPTER } from '@/constants/curriculum';
 
 const COINS_PER_LEVEL = 15;
-const TUTORIAL_KEY = 'kelime-bulmaca:tutorial-seen:v3';
+const INSTRUCTION_VIDEO_KEY = 'kelime-bulmaca:instruction-video-seen:v1';
 
 export default function PlayScreen() {
   const colors = useColors();
@@ -36,11 +36,12 @@ export default function PlayScreen() {
   } = useGameState();
 
   const { locale } = useI18n();
+  const currentWord = words[currentLevel];
   const [celebrating, setCelebrating] = useState(false);
   const [categoryComplete, setCategoryComplete] = useState(false);
   const [chapterComplete, setChapterComplete] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialChecked, setTutorialChecked] = useState(false);
+  const [instructionChecked, setInstructionChecked] = useState(false);
+  const [showInstructionVideo, setShowInstructionVideo] = useState(false);
 
   useEffect(() => {
     setCategoryComplete(false);
@@ -48,22 +49,11 @@ export default function PlayScreen() {
   }, [selectedCategory]);
 
   useEffect(() => {
-    // Show tutorial only on first visit — check AsyncStorage before showing
-    AsyncStorage.getItem(TUTORIAL_KEY).then((val) => {
-      if (!val) setShowTutorial(true);
-    }).catch(() => {
-      setShowTutorial(true);
-    }).finally(() => {
-      setTutorialChecked(true);
-    });
+    AsyncStorage.getItem(INSTRUCTION_VIDEO_KEY)
+      .then((seen) => setShowInstructionVideo(!seen))
+      .catch(() => setShowInstructionVideo(true))
+      .finally(() => setInstructionChecked(true));
   }, []);
-
-  const dismissTutorial = (dontShowAgain: boolean) => {
-    if (dontShowAgain) AsyncStorage.setItem(TUTORIAL_KEY, '1').catch(() => {});
-    setShowTutorial(false);
-  };
-
-  const currentWord = words[currentLevel];
 
   const categoryWords = words.filter((w) => w.category === selectedCategory);
   const currentCategoryIndex = categoryWords.findIndex((w) => w.id === currentWord?.id);
@@ -161,7 +151,6 @@ export default function PlayScreen() {
       : 'empty';
 
   const bottomPad = Math.max(insets.bottom, 12) + 16;
-
   return (
     <LinearGradient
       colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
@@ -203,7 +192,7 @@ export default function PlayScreen() {
         </View>
       </View>
 
-      {!tutorialChecked || showTutorial ? (
+      {!instructionChecked || showInstructionVideo ? (
         <View style={styles.tutorialPlaceholder} />
       ) : chapterComplete ? (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -292,7 +281,15 @@ export default function PlayScreen() {
         />
       ) : null}
 
-      <TutorialOverlay visible={tutorialChecked && showTutorial} onDismiss={dismissTutorial} />
+      {instructionChecked && showInstructionVideo ? (
+        <InstructionVideoOverlay
+          visible
+          onComplete={() => {
+            AsyncStorage.setItem(INSTRUCTION_VIDEO_KEY, '1').catch(() => {});
+            setShowInstructionVideo(false);
+          }}
+        />
+      ) : null}
     </LinearGradient>
   );
 }

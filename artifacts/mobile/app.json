@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Kelime Bulmaca",
+    "description": "4–7 yaş çocuklar için çevrimdışı, reklamsız kelime öğrenme oyunu.",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,13 +16,23 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.anonymous.mobile"
+      "bundleIdentifier": "com.wordbuilder.kids",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      "package": "com.wordbuilder.kids",
+      "versionCode": 1,
+      "permissions": [],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#FFD166"
+      }
     },
     "web": {
       "favicon": "./assets/images/icon.png"

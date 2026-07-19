@@ -42,7 +42,7 @@ const baseWords: WordItem[] = [
   },
   {
     id: 'fil',
-    spellings: { tr: 'fil', en: 'fil', fr: 'fil', es: 'fil', it: 'fil', de: 'fil' },
+    spellings: { tr: 'fil', en: 'elephant', fr: 'éléphant', es: 'elefante', it: 'elefante', de: 'elefant' },
     category: 'animals',
     image: require('../assets/images/word-fil.png'),
     emoji: '🐘',

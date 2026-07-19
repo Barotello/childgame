@@ -5,7 +5,11 @@ import { LOCALES, translations, type Locale, type TranslationKey } from '@/const
 const STORAGE_KEY = 'kelime-bulmaca:locale:v1';
 const DEFAULT_LOCALE: Locale = 'tr';
 
-const AVAILABLE_LOCALES: Locale[] = [...LOCALES];
+// Only expose languages whose complete vocabulary has passed an editorial
+// review. Other UI translations remain in the bundle for future rollout.
+const AVAILABLE_LOCALES: Locale[] = LOCALES.filter(
+  (locale) => locale === 'tr' || locale === 'en',
+);
 
 function interpolate(text: string, vars?: Record<string, string | number>) {
   if (!vars) return text;

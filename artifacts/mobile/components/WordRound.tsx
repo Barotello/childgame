@@ -16,7 +16,7 @@ import { playCorrectSound } from '@/lib/sounds';
 import { speakWord, speakWordAndWait } from '@/lib/speech';
 import { useI18n } from '@/lib/i18n';
 import { useGameState } from '@/lib/gameState';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
 
 const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38C6B0'];
@@ -114,6 +114,8 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   const revealProgress = useSharedValue(0);
   const completionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hadWrongAttempt = useRef(false);
+  const usedSupport = useRef(false);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const feedbackProgress = useSharedValue(0);
 
@@ -168,7 +170,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
   const handleLearningFeedback = (result: 'correct' | 'wrong') => {
     showFeedback(result);
-    recordWordAttempt(word.id, result === 'correct');
+    if (result === 'wrong') hadWrongAttempt.current = true;
   };
 
   const applyLetterAtIndex = (index: number, letter: string, tileKey?: string) => {
@@ -184,6 +186,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
     if (doneCount === total) {
       if (completionTimeout.current) clearTimeout(completionTimeout.current);
+      recordWordAttempt(word.id, !hadWrongAttempt.current && !usedSupport.current);
       speakWordAndWait(word.spellings[locale], locale).then(() => {
         completionTimeout.current = setTimeout(onComplete, 250);
       });
@@ -197,6 +200,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
     const consumed = consumeHintToken();
     if (!consumed) return;
+    usedSupport.current = true;
     recordHintUse(word.id);
 
     const targetLetter = letters[emptyIndex];

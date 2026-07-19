@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
 import { useI18n } from '@/lib/i18n';
 
@@ -13,14 +13,34 @@ type ParentGateProps = {
 export default function ParentGate({ visible, onClose, onSuccess }: ParentGateProps) {
   const { t } = useI18n();
   const [wrong, setWrong] = useState(false);
+  const [holding, setHolding] = useState(false);
   const [stage, setStage] = useState<'hold' | 'question'>('hold');
   const [challenge, setChallenge] = useState(() => createChallenge());
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelHold = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setHolding(false);
+  };
+
+  const startHold = () => {
+    cancelHold();
+    setHolding(true);
+    holdTimer.current = setTimeout(() => {
+      holdTimer.current = null;
+      setHolding(false);
+      setStage('question');
+    }, 1800);
+  };
 
   useEffect(() => {
     if (!visible) return;
     setWrong(false);
+    cancelHold();
     setStage('hold');
     setChallenge(createChallenge());
+    return cancelHold;
   }, [visible]);
 
   const choose = (answer: number) => {
@@ -37,7 +57,12 @@ export default function ParentGate({ visible, onClose, onSuccess }: ParentGatePr
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <Pressable onPress={onClose} style={styles.close} accessibilityRole="button">
+          <Pressable
+            onPress={onClose}
+            style={styles.close}
+            accessibilityRole="button"
+            accessibilityLabel={t('close')}
+          >
             <Feather name="x" size={22} color={gameTheme.colors.inkSoft} />
           </Pressable>
           <View style={styles.icon}>
@@ -49,16 +74,16 @@ export default function ParentGate({ visible, onClose, onSuccess }: ParentGatePr
           </Text>
           {stage === 'hold' ? (
             <Pressable
-              onLongPress={() => setStage('question')}
-              delayLongPress={1800}
-              style={({ pressed }) => [styles.holdButton, pressed && styles.holdPressed]}
+              onPressIn={startHold}
+              onPressOut={cancelHold}
+              style={[styles.holdButton, holding && styles.holdPressed]}
               accessibilityRole="button"
               accessibilityLabel={t('parentGateHoldButton')}
               accessibilityHint={t('parentGateHold')}
             >
-              <Feather name="unlock" size={26} color="#FFFFFF" />
+              <Feather name={holding ? 'clock' : 'unlock'} size={26} color="#FFFFFF" />
               <Text style={styles.holdText}>{t('parentGateHoldButton')}</Text>
-              <Text style={styles.holdSeconds}>2 sn</Text>
+              <Text style={styles.holdSeconds}>{holding ? '…' : '2 sn'}</Text>
             </Pressable>
           ) : (
             <>
@@ -72,6 +97,7 @@ export default function ParentGate({ visible, onClose, onSuccess }: ParentGatePr
                 onPress={() => choose(answer)}
                 style={({ pressed }) => [styles.answer, pressed && styles.answerPressed]}
                 accessibilityRole="button"
+                accessibilityLabel={String(answer)}
               >
                 <Text style={styles.answerText}>{answer}</Text>
               </Pressable>

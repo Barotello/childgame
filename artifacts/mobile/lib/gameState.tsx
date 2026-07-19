@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { AppState } from 'react-native';
 import { type CategoryId } from '@/constants/library';
 import {
   recordLearningEvent,
@@ -7,6 +8,7 @@ import {
 } from '@/constants/learning';
 import words from '@/constants/words';
 import { firstAvailableLevel, isWordUnlocked } from '@/constants/progression';
+import { advanceDailyProgress } from '@/constants/dailyProgress';
 import { setSoundsMuted } from '@/lib/sounds';
 import { setSpeechMuted } from '@/lib/speech';
 
@@ -15,6 +17,7 @@ const HINT_COST = 20;
 const HINT_PACK_COST = 80;
 const HINT_PACK_SIZE = 5;
 const LEVEL_REWARD_COINS = 15;
+const DAILY_GOAL_REWARD_COINS = 30;
 const DEFAULT_DAILY_GOAL = 3;
 
 function localDayKey() {
@@ -35,6 +38,7 @@ type PersistedState = {
   dailyDate: string;
   dailyWords: number;
   dailyGoal: number;
+  dailyRewardClaimed: boolean;
   screenTimeMinutes: number;
   learningRecords: LearningRecords;
 };
@@ -57,6 +61,7 @@ const DEFAULT_STATE: PersistedState = {
   dailyDate: localDayKey(),
   dailyWords: 0,
   dailyGoal: DEFAULT_DAILY_GOAL,
+  dailyRewardClaimed: false,
   screenTimeMinutes: 20,
   learningRecords: {},
 };
@@ -102,6 +107,7 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           if (merged.dailyDate !== localDayKey()) {
             merged.dailyDate = localDayKey();
             merged.dailyWords = 0;
+            merged.dailyRewardClaimed = false;
           }
           // Guard against stale saves where the persisted level and category
           // don't correspond to the same word (e.g. saves from before
@@ -129,6 +135,30 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
       // Non-fatal: progress simply won't persist this session.
     });
   }, [state, loaded]);
+
+  useEffect(() => {
+    const refreshDay = () => {
+      const today = localDayKey();
+      setState((previous) =>
+        previous.dailyDate === today
+          ? previous
+          : {
+              ...previous,
+              dailyDate: today,
+              dailyWords: 0,
+              dailyRewardClaimed: false,
+            },
+      );
+    };
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active') refreshDay();
+    });
+    const timer = setInterval(refreshDay, 60_000);
+    return () => {
+      subscription.remove();
+      clearInterval(timer);
+    };
+  }, []);
 
   const value = useMemo<GameStateContextValue>(() => {
     const totalLevels = words.length;
@@ -174,6 +204,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           let newWordsProgress = prev.wordsProgress;
           const isToday = prev.dailyDate === localDayKey();
           const currentDailyWords = isToday ? prev.dailyWords : 0;
+          const rewardAlreadyClaimed = isToday ? prev.dailyRewardClaimed : false;
+          const dailyProgress = advanceDailyProgress({
+            currentWords: currentDailyWords,
+            goal: prev.dailyGoal,
+            isNewCompletion: isNew,
+            rewardClaimed: rewardAlreadyClaimed,
+          });
           
           if (isNew) {
             newWordsProgress += 1;
@@ -185,15 +222,17 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
 
           return {
             ...prev,
-            coins: isNew ? prev.coins + LEVEL_REWARD_COINS : prev.coins,
+            coins:
+              prev.coins +
+              (isNew ? LEVEL_REWARD_COINS : 0) +
+              (dailyProgress.rewardEarned ? DAILY_GOAL_REWARD_COINS : 0),
             completedLevels: isNew ? [...prev.completedLevels, index] : prev.completedLevels,
             highestUnlocked: Math.max(prev.highestUnlocked, index + 1),
             skipTokens: newSkipTokens,
             wordsProgress: newWordsProgress,
             dailyDate: localDayKey(),
-            dailyWords: isNew
-              ? Math.min(prev.dailyGoal, currentDailyWords + 1)
-              : currentDailyWords,
+            dailyWords: dailyProgress.words,
+            dailyRewardClaimed: dailyProgress.rewardClaimed,
             learningRecords: words[index]
               ? recordLearningEvent(prev.learningRecords, words[index].id, 'complete')
               : prev.learningRecords,

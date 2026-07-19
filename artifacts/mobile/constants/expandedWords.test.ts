@@ -11,12 +11,25 @@ test('content expansion reaches the requested scalable category totals', () => {
   );
 
   assert.deepEqual(counts, {
-    animals: 71,
-    fruits: 93,
-    numbers: 90,
-    flags: 88,
+    animals: 11,
+    fruits: 13,
+    numbers: 0,
+    flags: 0,
   });
   assert.equal(new Set(expandedWords.map((word) => word.id)).size, expandedWords.length);
+});
+
+test('the shipped starter expansion stays suitable for early readers', () => {
+  for (const word of expandedWords) {
+    for (const locale of ['tr', 'en'] as const) {
+      const spelling = word.spellings[locale];
+      assert.ok(
+        Array.from(spelling).length <= 9,
+        `${word.id}/${locale} is too long for the starter path: ${spelling}`,
+      );
+      assert.equal(spelling.includes(' '), false, `${word.id}/${locale} must be one word`);
+    }
+  }
 });
 
 test('fruit expansion avoids ambiguous picture-choice rounds', () => {
