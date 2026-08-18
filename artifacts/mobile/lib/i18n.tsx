@@ -3,12 +3,12 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { LOCALES, translations, type Locale, type TranslationKey } from '@/constants/translations';
 
 const STORAGE_KEY = 'kelime-bulmaca:locale:v1';
-const DEFAULT_LOCALE: Locale = 'tr';
+const DEFAULT_LOCALE: Locale = 'en';
 
 // Only expose languages whose complete vocabulary has passed an editorial
 // review. Other UI translations remain in the bundle for future rollout.
 const AVAILABLE_LOCALES: Locale[] = LOCALES.filter(
-  (locale) => locale === 'tr' || locale === 'en',
+  (locale) => locale === 'en' || locale === 'tr',
 );
 
 function interpolate(text: string, vars?: Record<string, string | number>) {

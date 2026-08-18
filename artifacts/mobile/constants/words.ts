@@ -19,33 +19,20 @@ export type WordItem = {
  * no multi-word names, vegetables removed from fruits, flags capped.
  */
 const baseWords: WordItem[] = [
+  // --- Chapter 1: Farm & Pets (Evcil & Çiftlik) ---
   {
-    id: 'ari',
-    spellings: { tr: 'arı', en: 'bee', fr: 'abeille', es: 'abeja', it: 'ape', de: 'biene' },
+    id: 'kedi',
+    spellings: { tr: 'kedi', en: 'cat', fr: 'chat', es: 'gato', it: 'gatto', de: 'katze' },
     category: 'animals',
-    image: require('../assets/images/word-ari.png'),
-    emoji: '🐝',
+    image: require('../assets/images/word-kedi.png'),
+    emoji: '🐱',
   },
   {
-    id: 'ayi',
-    spellings: { tr: 'ayı', en: 'bear', fr: 'ours', es: 'oso', it: 'orso', de: 'bär' },
+    id: 'anim_dog',
+    spellings: { tr: 'köpek', en: 'dog', fr: 'chien', es: 'perro', it: 'cane', de: 'hund' },
     category: 'animals',
-    image: require('../assets/images/word-ayi.png'),
-    emoji: '🐻',
-  },
-  {
-    id: 'balik',
-    spellings: { tr: 'balık', en: 'fish', fr: 'poisson', es: 'pez', it: 'pesce', de: 'fisch' },
-    category: 'animals',
-    image: require('../assets/images/word-balik.png'),
-    emoji: '🐟',
-  },
-  {
-    id: 'fil',
-    spellings: { tr: 'fil', en: 'elephant', fr: 'éléphant', es: 'elefante', it: 'elefante', de: 'elefant' },
-    category: 'animals',
-    image: require('../assets/images/word-fil.png'),
-    emoji: '🐘',
+    image: require('../assets/images/word-kopek.png'),
+    emoji: '🐶',
   },
   {
     id: 'inek',
@@ -55,12 +42,56 @@ const baseWords: WordItem[] = [
     emoji: '🐄',
   },
   {
-    id: 'kedi',
-    spellings: { tr: 'kedi', en: 'cat', fr: 'chat', es: 'gato', it: 'gatto', de: 'katze' },
+    id: 'anim_horse',
+    spellings: { tr: 'at', en: 'horse', fr: 'cheval', es: 'caballo', it: 'cavallo', de: 'pferd' },
     category: 'animals',
-    image: require('../assets/images/word-kedi.png'),
-    emoji: '🐱',
+    image: require('../assets/images/word-at.png'),
+    emoji: '🐴',
   },
+  {
+    id: 'anim_rabbit',
+    spellings: { tr: 'tavşan', en: 'rabbit', fr: 'lapin', es: 'conejo', it: 'coniglio', de: 'hase' },
+    category: 'animals',
+    image: require('../assets/images/word-tavsan.png'),
+    emoji: '🐰',
+  },
+
+  // --- Chapter 2: Wild Safari & Forest (Vahşi Orman & Safari) ---
+  {
+    id: 'anim_lion',
+    spellings: { tr: 'aslan', en: 'lion', fr: 'lion', es: 'león', it: 'leone', de: 'löwe' },
+    category: 'animals',
+    image: require('../assets/images/word-aslan.png'),
+    emoji: '🦁',
+  },
+  {
+    id: 'fil',
+    spellings: { tr: 'fil', en: 'elephant', fr: 'éléphant', es: 'elefante', it: 'elefante', de: 'elefant' },
+    category: 'animals',
+    image: require('../assets/images/word-fil.png'),
+    emoji: '🐘',
+  },
+  {
+    id: 'ayi',
+    spellings: { tr: 'ayı', en: 'bear', fr: 'ours', es: 'oso', it: 'orso', de: 'bär' },
+    category: 'animals',
+    image: require('../assets/images/word-ayi.png'),
+    emoji: '🐻',
+  },
+  {
+    id: 'anim_monkey',
+    spellings: { tr: 'maymun', en: 'monkey', fr: 'singe', es: 'mono', it: 'scimmia', de: 'affe' },
+    category: 'animals',
+    emoji: '🐵',
+  },
+  {
+    id: 'anim_giraffe',
+    spellings: { tr: 'zürafa', en: 'giraffe', fr: 'girafe', es: 'jirafa', it: 'giraffa', de: 'giraffe' },
+    category: 'animals',
+    emoji: '🦒',
+  },
+
+  // --- Chapter 3: Birds & Wings (Kanatlı Dostlar / Kuşlar) ---
   {
     id: 'kus',
     spellings: { tr: 'kuş', en: 'bird', fr: 'oiseau', es: 'pájaro', it: 'uccello', de: 'vogel' },
@@ -79,35 +110,8 @@ const baseWords: WordItem[] = [
     id: 'ordek',
     spellings: { tr: 'ördek', en: 'duck', fr: 'canard', es: 'pato', it: 'anatra', de: 'ente' },
     category: 'animals',
-    image: require('../assets/images/word-ordek.png'),
+    image: require('../assets/images/duck.png'),
     emoji: '🦆',
-  },
-  {
-    id: 'anim_lion',
-    spellings: { tr: 'aslan', en: 'lion', fr: 'lion', es: 'león', it: 'leone', de: 'löwe' },
-    category: 'animals',
-    image: require('../assets/images/word-aslan.png'),
-    emoji: '🦁',
-  },
-  {
-    id: 'anim_rabbit',
-    spellings: { tr: 'tavşan', en: 'rabbit', fr: 'lapin', es: 'conejo', it: 'coniglio', de: 'hase' },
-    category: 'animals',
-    image: require('../assets/images/word-tavsan.png'),
-    emoji: '🐰',
-  },
-  {
-    id: 'anim_horse',
-    spellings: { tr: 'at', en: 'horse', fr: 'cheval', es: 'caballo', it: 'cavallo', de: 'pferd' },
-    category: 'animals',
-    image: require('../assets/images/word-at.png'),
-    emoji: '🐴',
-  },
-  {
-    id: 'anim_whale',
-    spellings: { tr: 'balina', en: 'whale', fr: 'baleine', es: 'ballena', it: 'balena', de: 'wal' },
-    category: 'animals',
-    emoji: '🐳',
   },
   {
     id: 'anim_owl',
@@ -116,10 +120,96 @@ const baseWords: WordItem[] = [
     emoji: '🦉',
   },
   {
+    id: 'anim_eagle',
+    spellings: { tr: 'kartal', en: 'eagle', fr: 'aigle', es: 'águila', it: 'aquila', de: 'adler' },
+    category: 'animals',
+    emoji: '🦅',
+  },
+
+  // --- Chapter 4: Sea & Ocean Life (Deniz & Okyanus Canlıları) ---
+  {
+    id: 'balik',
+    spellings: { tr: 'balık', en: 'fish', fr: 'poisson', es: 'pez', it: 'pesce', de: 'fisch' },
+    category: 'animals',
+    image: require('../assets/images/word-balik.png'),
+    emoji: '🐟',
+  },
+  {
+    id: 'anim_dolphin',
+    spellings: { tr: 'yunus', en: 'dolphin', fr: 'dauphin', es: 'delfín', it: 'delfino', de: 'delfin' },
+    category: 'animals',
+    emoji: '🐬',
+  },
+  {
+    id: 'anim_whale',
+    spellings: { tr: 'balina', en: 'whale', fr: 'baleine', es: 'ballena', it: 'balena', de: 'wal' },
+    category: 'animals',
+    emoji: '🐳',
+  },
+  {
+    id: 'anim_swan',
+    spellings: { tr: 'kuğu', en: 'swan', fr: 'cygne', es: 'cisne', it: 'cigno', de: 'schwan' },
+    category: 'animals',
+    emoji: '🦢',
+  },
+  {
+    id: 'anim_koala',
+    spellings: { tr: 'koala', en: 'koala', fr: 'koala', es: 'koala', it: 'koala', de: 'koala' },
+    category: 'animals',
+    emoji: '🐨',
+  },
+
+  // --- Chapter 5: Wildlife & Nature (Vahşi Doğa & Çeşitlilik) ---
+  {
+    id: 'anim_tiger',
+    spellings: { tr: 'kaplan', en: 'tiger', fr: 'tigre', es: 'tigre', it: 'tigre', de: 'tiger' },
+    category: 'animals',
+    emoji: '🐯',
+  },
+  {
+    id: 'anim_panda',
+    spellings: { tr: 'panda', en: 'panda', fr: 'panda', es: 'panda', it: 'panda', de: 'panda' },
+    category: 'animals',
+    emoji: '🐼',
+  },
+  {
+    id: 'anim_wolf',
+    spellings: { tr: 'kurt', en: 'wolf', fr: 'loup', es: 'lobo', it: 'lupo', de: 'wolf' },
+    category: 'animals',
+    emoji: '🐺',
+  },
+  {
+    id: 'anim_fox',
+    spellings: { tr: 'tilki', en: 'fox', fr: 'renard', es: 'zorro', it: 'volpe', de: 'fuchs' },
+    category: 'animals',
+    emoji: '🦊',
+  },
+  {
     id: 'anim_pig',
     spellings: { tr: 'domuz', en: 'pig', fr: 'cochon', es: 'cerdo', it: 'maiale', de: 'schwein' },
     category: 'animals',
     emoji: '🐷',
+  },
+
+  // --- Chapter 6: Insects & Tiny Friends (Minik Dostlar & Böcekler) ---
+  {
+    id: 'ari',
+    spellings: { tr: 'arı', en: 'bee', fr: 'abeille', es: 'abeja', it: 'ape', de: 'biene' },
+    category: 'animals',
+    image: require('../assets/images/word-ari.png'),
+    emoji: '🐝',
+  },
+  {
+    id: 'anim_ant',
+    spellings: { tr: 'karınca', en: 'ant', fr: 'fourmi', es: 'hormiga', it: 'formica', de: 'ameise' },
+    category: 'animals',
+    emoji: '🐜',
+  },
+  {
+    id: 'anim_worm',
+    spellings: { tr: 'tırtıl', en: 'worm', fr: 'ver', es: 'gusano', it: 'verme', de: 'raupe' },
+    category: 'animals',
+    emoji: '🐛',
   },
   {
     id: 'anim_mouse',
@@ -132,85 +222,6 @@ const baseWords: WordItem[] = [
     spellings: { tr: 'hamster', en: 'hamster', fr: 'hamster', es: 'hámster', it: 'criceto', de: 'hamster' },
     category: 'animals',
     emoji: '🐹',
-  },
-  {
-    id: 'anim_tiger',
-    spellings: { tr: 'kaplan', en: 'tiger', fr: 'tigre', es: 'tigre', it: 'tigre', de: 'tiger' },
-    category: 'animals',
-    emoji: '🐯',
-  },
-  {
-    id: 'anim_eagle',
-    spellings: { tr: 'kartal', en: 'eagle', fr: 'aigle', es: 'águila', it: 'aquila', de: 'adler' },
-    category: 'animals',
-    emoji: '🦅',
-  },
-  {
-    id: 'anim_ant',
-    spellings: { tr: 'karınca', en: 'ant', fr: 'fourmi', es: 'hormiga', it: 'formica', de: 'ameise' },
-    category: 'animals',
-    emoji: '🐜',
-  },
-  {
-    id: 'anim_koala',
-    spellings: { tr: 'koala', en: 'koala', fr: 'koala', es: 'koala', it: 'koala', de: 'koala' },
-    category: 'animals',
-    emoji: '🐨',
-  },
-  {
-    id: 'anim_wolf',
-    spellings: { tr: 'kurt', en: 'wolf', fr: 'loup', es: 'lobo', it: 'lupo', de: 'wolf' },
-    category: 'animals',
-    emoji: '🐺',
-  },
-  {
-    id: 'anim_swan',
-    spellings: { tr: 'kuğu', en: 'swan', fr: 'cygne', es: 'cisne', it: 'cigno', de: 'schwan' },
-    category: 'animals',
-    emoji: '🦢',
-  },
-  {
-    id: 'anim_dog',
-    spellings: { tr: 'köpek', en: 'dog', fr: 'chien', es: 'perro', it: 'cane', de: 'hund' },
-    category: 'animals',
-    image: require('../assets/images/word-kopek.png'),
-    emoji: '🐶',
-  },
-  {
-    id: 'anim_monkey',
-    spellings: { tr: 'maymun', en: 'monkey', fr: 'singe', es: 'mono', it: 'scimmia', de: 'affe' },
-    category: 'animals',
-    emoji: '🐵',
-  },
-  {
-    id: 'anim_panda',
-    spellings: { tr: 'panda', en: 'panda', fr: 'panda', es: 'panda', it: 'panda', de: 'panda' },
-    category: 'animals',
-    emoji: '🐼',
-  },
-  {
-    id: 'anim_fox',
-    spellings: { tr: 'tilki', en: 'fox', fr: 'renard', es: 'zorro', it: 'volpe', de: 'fuchs' },
-    category: 'animals',
-    emoji: '🦊',
-  },
-  {
-    id: 'anim_worm',
-    spellings: { tr: 'tırtıl', en: 'worm', fr: 'ver', es: 'gusano', it: 'verme', de: 'raupe' },
-    category: 'animals',
-    emoji: '🐛',
-  },
-  {
-    id: 'anim_dolphin',
-    spellings: { tr: 'yunus', en: 'dolphin', fr: 'dauphin', es: 'delfín', it: 'delfino', de: 'delfin' },
-    category: 'animals',
-    emoji: '🐬',
-  },
-  {
-    id: 'anim_giraffe',
-    spellings: { tr: 'zürafa', en: 'giraffe', fr: 'girafe', es: 'jirafa', it: 'giraffa', de: 'giraffe' },
-    category: 'animals',
-    emoji: '🦒',
   },
   {
     id: 'elma',
@@ -372,6 +383,20 @@ const baseWords: WordItem[] = [
     category: 'colors',
     swatch: '#6FCB6B',
   },
+  // ─── Bayraklar / Flags (Organized by Continent — 4 Chapters x 5 Flags) ─────────
+  // --- Chapter 1: Europe (Avrupa Bayrakları) ---
+  {
+    id: 'flag_tr',
+    spellings: { tr: 'türkiye', en: 'turkey', fr: 'turquie', es: 'turquía', it: 'turchia', de: 'türkei' },
+    category: 'flags',
+    emoji: '🇹🇷',
+  },
+  {
+    id: 'flag_de',
+    spellings: { tr: 'almanya', en: 'germany', fr: 'allemagne', es: 'alemania', it: 'germania', de: 'deutschland' },
+    category: 'flags',
+    emoji: '🇩🇪',
+  },
   {
     id: 'flag_it',
     spellings: { tr: 'italya', en: 'italy', fr: 'italie', es: 'italia', it: 'italia', de: 'italien' },
@@ -379,58 +404,30 @@ const baseWords: WordItem[] = [
     emoji: '🇮🇹',
   },
   {
-    id: 'flag_ca',
-    spellings: { tr: 'kanada', en: 'canada', fr: 'canada', es: 'canadá', it: 'canada', de: 'kanada' },
+    id: 'flag_fr',
+    spellings: { tr: 'fransa', en: 'france', fr: 'france', es: 'francia', it: 'francia', de: 'frankreich' },
     category: 'flags',
-    emoji: '🇨🇦',
+    emoji: '🇫🇷',
   },
   {
-    id: 'flag_ke',
-    spellings: { tr: 'kenya', en: 'kenya', fr: 'kenya', es: 'kenia', it: 'kenya', de: 'kenia' },
+    id: 'flag_es',
+    spellings: { tr: 'ispanya', en: 'spain', fr: 'espagne', es: 'españa', it: 'spagna', de: 'spanien' },
     category: 'flags',
-    emoji: '🇰🇪',
+    emoji: '🇪🇸',
+  },
+
+  // --- Chapter 2: Asia & Middle East (Asya & Orta Doğu Bayrakları) ---
+  {
+    id: 'flag_jp',
+    spellings: { tr: 'japonya', en: 'japan', fr: 'japon', es: 'japón', it: 'giappone', de: 'japan' },
+    category: 'flags',
+    emoji: '🇯🇵',
   },
   {
-    id: 'flag_cu',
-    spellings: { tr: 'küba', en: 'cuba', fr: 'cuba', es: 'cuba', it: 'cuba', de: 'kuba' },
+    id: 'flag_kr',
+    spellings: { tr: 'kore', en: 'korea', fr: 'corée', es: 'corea', it: 'corea', de: 'korea' },
     category: 'flags',
-    emoji: '🇨🇺',
-  },
-  {
-    id: 'flag_mt',
-    spellings: { tr: 'malta', en: 'malta', fr: 'malte', es: 'malta', it: 'malta', de: 'malta' },
-    category: 'flags',
-    emoji: '🇲🇹',
-  },
-  {
-    id: 'flag_mx',
-    spellings: { tr: 'meksika', en: 'mexico', fr: 'mexique', es: 'méxico', it: 'messico', de: 'mexiko' },
-    category: 'flags',
-    emoji: '🇲🇽',
-  },
-  {
-    id: 'flag_eg',
-    spellings: { tr: 'mısır', en: 'egypt', fr: 'égypte', es: 'egipto', it: 'egitto', de: 'ägypten' },
-    category: 'flags',
-    emoji: '🇪🇬',
-  },
-  {
-    id: 'flag_np',
-    spellings: { tr: 'nepal', en: 'nepal', fr: 'népal', es: 'nepal', it: 'nepal', de: 'nepal' },
-    category: 'flags',
-    emoji: '🇳🇵',
-  },
-  {
-    id: 'flag_pe',
-    spellings: { tr: 'peru', en: 'peru', fr: 'pérou', es: 'perú', it: 'perù', de: 'peru' },
-    category: 'flags',
-    emoji: '🇵🇪',
-  },
-  {
-    id: 'flag_pl',
-    spellings: { tr: 'polonya', en: 'poland', fr: 'pologne', es: 'polonia', it: 'polonia', de: 'polen' },
-    category: 'flags',
-    emoji: '🇵🇱',
+    emoji: '🇰🇷',
   },
   {
     id: 'flag_cn',
@@ -439,10 +436,80 @@ const baseWords: WordItem[] = [
     emoji: '🇨🇳',
   },
   {
-    id: 'flag_cl',
-    spellings: { tr: 'şili', en: 'chile', fr: 'chili', es: 'chile', it: 'cile', de: 'chile' },
+    id: 'flag_in',
+    spellings: { tr: 'hindistan', en: 'india', fr: 'inde', es: 'india', it: 'india', de: 'indien' },
     category: 'flags',
-    emoji: '🇨🇱',
+    emoji: '🇮🇳',
+  },
+  {
+    id: 'flag_az',
+    spellings: { tr: 'azerbaycan', en: 'azerbaijan', fr: 'azerbaïdjan', es: 'azerbaiyán', it: 'azerbaigian', de: 'aserbaidschan' },
+    category: 'flags',
+    emoji: '🇦🇿',
+  },
+
+  // --- Chapter 3: The Americas (Amerika Kıtası Bayrakları) ---
+  {
+    id: 'flag_us',
+    spellings: { tr: 'amerika', en: 'usa', fr: 'états-unis', es: 'ee.uu.', it: 'usa', de: 'usa' },
+    category: 'flags',
+    emoji: '🇺🇸',
+  },
+  {
+    id: 'flag_ca',
+    spellings: { tr: 'kanada', en: 'canada', fr: 'canada', es: 'canadá', it: 'canada', de: 'kanada' },
+    category: 'flags',
+    emoji: '🇨🇦',
+  },
+  {
+    id: 'flag_br',
+    spellings: { tr: 'brezilya', en: 'brazil', fr: 'brésil', es: 'brasil', it: 'brasile', de: 'brasilien' },
+    category: 'flags',
+    emoji: '🇧🇷',
+  },
+  {
+    id: 'flag_mx',
+    spellings: { tr: 'meksika', en: 'mexico', fr: 'mexique', es: 'méxico', it: 'messico', de: 'mexiko' },
+    category: 'flags',
+    emoji: '🇲🇽',
+  },
+  {
+    id: 'flag_ar',
+    spellings: { tr: 'arjantin', en: 'argentina', fr: 'argentine', es: 'argentina', it: 'argentina', de: 'argentinien' },
+    category: 'flags',
+    emoji: '🇦🇷',
+  },
+
+  // --- Chapter 4: Africa & Oceania (Afrika & Okyanusya Bayrakları) ---
+  {
+    id: 'flag_eg',
+    spellings: { tr: 'mısır', en: 'egypt', fr: 'égypte', es: 'egipto', it: 'egitto', de: 'ägypten' },
+    category: 'flags',
+    emoji: '🇪🇬',
+  },
+  {
+    id: 'flag_za',
+    spellings: { tr: 'güney afrika', en: 'south africa', fr: 'afrique du sud', es: 'sudáfrica', it: 'sudafrica', de: 'südafrika' },
+    category: 'flags',
+    emoji: '🇿🇦',
+  },
+  {
+    id: 'flag_ke',
+    spellings: { tr: 'kenya', en: 'kenya', fr: 'kenya', es: 'kenia', it: 'kenya', de: 'kenia' },
+    category: 'flags',
+    emoji: '🇰🇪',
+  },
+  {
+    id: 'flag_au',
+    spellings: { tr: 'avustralya', en: 'australia', fr: 'australie', es: 'australia', it: 'australia', de: 'australien' },
+    category: 'flags',
+    emoji: '🇦🇺',
+  },
+  {
+    id: 'flag_nz',
+    spellings: { tr: 'yeni zelanda', en: 'new zealand', fr: 'nouvelle-zélande', es: 'nueva zelanda', it: 'nuova zelanda', de: 'neuseeland' },
+    category: 'flags',
+    emoji: '🇳🇿',
   },
 
   // ─── Vücudumuz / Body ────────────────────────────────────────────────────────

@@ -5,7 +5,6 @@ import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '@/components/GameHeader';
-import MascotGuide from '@/components/MascotGuide';
 import WordVisual from '@/components/WordVisual';
 import { buildCategoryChapters } from '@/constants/curriculum';
 import categories, { type CategoryId } from '@/constants/library';
@@ -16,12 +15,12 @@ import { useI18n } from '@/lib/i18n';
 import { speakWord } from '@/lib/speech';
 
 const CATEGORY_COLORS: Record<CategoryId, { main: string; pale: string; border: string }> = {
-  animals: { main: '#FF9D55', pale: '#FFF0E4', border: '#E57A2D' },
-  fruits: { main: '#8BCB55', pale: '#EFF9E7', border: '#5A9B2F' },
-  numbers: { main: '#59B3EA', pale: '#E9F6FE', border: '#3285BA' },
-  colors: { main: '#F05E7D', pale: '#FFF0F4', border: '#C63B5B' },
-  flags: { main: '#9B7AE0', pale: '#F2EDFC', border: '#7252B4' },
-  body: { main: '#F27DB1', pale: '#FFF0F7', border: '#C94F86' },
+  animals: { main: '#FF9D55', pale: '#FFF5EB', border: '#E57A2D' },
+  fruits: { main: '#8BCB55', pale: '#F4FAEE', border: '#5A9B2F' },
+  numbers: { main: '#59B3EA', pale: '#F0F8FE', border: '#3285BA' },
+  colors: { main: '#F05E7D', pale: '#FFF2F5', border: '#C63B5B' },
+  flags: { main: '#9B7AE0', pale: '#F6F2FD', border: '#7252B4' },
+  body: { main: '#F27DB1', pale: '#FFF2F8', border: '#C94F86' },
 };
 
 export default function CategoryChaptersScreen() {
@@ -31,95 +30,143 @@ export default function CategoryChaptersScreen() {
   const category = categories.find((item) => item.id === selectedCategory) ?? categories[0];
   const color = CATEGORY_COLORS[category.id];
   const chapters = buildCategoryChapters(words, completedLevels, category.id);
-  const guide = t('chooseChapterBody');
-
-  const startChapter = (chapterIndex: number) => {
+  const handleCardPress = (chapterIndex: number) => {
     const chapter = chapters[chapterIndex];
-    if (!chapter?.unlocked) return;
+    if (!chapter?.unlocked) {
+      speakWord(t('lockedChapterHint'), locale);
+      return;
+    }
     const entry = chapter.entries.find(({ globalIndex }) => !completedLevels.includes(globalIndex))
       ?? chapter.entries[0];
-    if (entry && playWordAt(entry.globalIndex, category.id)) router.push('/game');
+    if (entry && playWordAt(entry.globalIndex, category.id)) {
+      router.push('/game');
+    }
   };
 
   return (
     <LinearGradient
       colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
-      style={[styles.root, { paddingTop: insets.top + 8 }]}
+      style={[styles.root, { paddingTop: insets.top + 20 }]}
     >
       <GameHeader onBack={() => router.navigate('/journey')} />
+
+      {/* Page Header — Clean Adventure Title */}
       <View style={styles.headingRow}>
         <View style={[styles.categoryIcon, { backgroundColor: color.main }]}>
           <Text style={styles.categoryEmoji}>{category.emoji}</Text>
         </View>
         <View style={styles.headingCopy}>
-          <Text style={styles.eyebrow}>{t('chooseChapter')}</Text>
           <Text style={styles.title}>{t(category.titleKey)}</Text>
+          <Text style={styles.subtitle}>{t('chooseAdventure')}</Text>
         </View>
       </View>
-      <MascotGuide message={guide} onPress={() => speakWord(guide, locale)} />
 
+      {/* Chapter Cards List */}
       <ScrollView
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 28 }]}
         showsVerticalScrollIndicator={false}
       >
-        {chapters.map((chapter) => (
-          <Pressable
-            key={chapter.number}
-            onPress={() => startChapter(chapter.number - 1)}
-            disabled={!chapter.unlocked}
-            accessibilityRole="button"
-            accessibilityLabel={
-              chapter.unlocked
-                ? t('chapterNumber', { number: chapter.number })
-                : `${t('chapterNumber', { number: chapter.number })}, ${t('locked')}`
-            }
-            style={({ pressed }) => [
-              styles.chapterCard,
-              { backgroundColor: chapter.unlocked ? color.pale : '#EEE9E2', borderColor: chapter.unlocked ? color.border : '#CFC8BE' },
-              !chapter.unlocked && styles.lockedCard,
-              pressed && chapter.unlocked && styles.pressedCard,
-            ]}
-          >
-            <View style={styles.chapterTop}>
-              <View style={[styles.numberBadge, { backgroundColor: chapter.unlocked ? color.main : '#AAA2B0' }]}>
-                {chapter.complete ? (
-                  <Feather name="check" size={23} color="#FFFFFF" />
-                ) : chapter.unlocked ? (
-                  <Text style={styles.numberText}>{chapter.number}</Text>
-                ) : (
-                  <Feather name="lock" size={21} color="#FFFFFF" />
-                )}
-              </View>
-              <View style={styles.chapterCopy}>
-                <Text style={styles.chapterTitle}>{t('chapterNumber', { number: chapter.number })}</Text>
-                <Text style={styles.chapterProgress}>
-                  {t('chapterWordsProgress', {
-                    done: chapter.completedCount,
-                    total: chapter.entries.length,
-                  })}
-                </Text>
-              </View>
-              <View style={[styles.playButton, { backgroundColor: chapter.unlocked ? color.main : '#B7AFBA' }]}>
-                <Feather name={chapter.unlocked ? 'play' : 'lock'} size={19} color="#FFFFFF" />
-              </View>
-            </View>
+        {chapters.map((chapter, index) => {
+          const chapterColor = chapter.theme?.colors ?? color;
+          const chapterTitle = chapter.theme
+            ? t(chapter.theme.titleKey)
+            : t('chapterNumber', { number: chapter.number });
 
-            <View style={styles.wordPreviewRow}>
-              {chapter.entries.map(({ word, globalIndex }) => {
-                const learned = completedLevels.includes(globalIndex);
-                return (
-                  <View key={word.id} style={styles.wordPreview}>
-                    <WordVisual word={word} style={styles.wordVisual} emojiSize={34} />
-                    <View style={[styles.wordStatus, learned && { backgroundColor: gameTheme.colors.mint }]}>
-                      {learned ? <Feather name="check" size={10} color="#FFFFFF" /> : null}
+          return (
+            <Pressable
+              key={chapter.number}
+              onPress={() => handleCardPress(index)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                chapter.unlocked
+                  ? chapterTitle
+                  : `${chapterTitle}, ${t('locked')}`
+              }
+              style={({ pressed }) => [
+                styles.chapterCard,
+                {
+                  backgroundColor: chapter.unlocked ? chapterColor.pale : '#F4EFEA',
+                  borderColor: chapter.unlocked ? chapterColor.border : '#DDD6CC',
+                },
+                !chapter.unlocked && styles.lockedCard,
+                pressed && styles.pressedCard,
+              ]}
+            >
+              {/* Card Top: Habitat Icon + Title + Progress + Play/Lock Button */}
+              <View style={styles.chapterTop}>
+                <View
+                  style={[
+                    styles.habitatBadge,
+                    { backgroundColor: chapter.unlocked ? chapterColor.main : '#B0A8B8' },
+                  ]}
+                >
+                  {chapter.complete ? (
+                    <Feather name="check" size={24} color="#FFFFFF" />
+                  ) : chapter.theme ? (
+                    <Text style={styles.habitatEmoji}>{chapter.theme.emoji}</Text>
+                  ) : chapter.unlocked ? (
+                    <Text style={styles.chapterNumText}>{chapter.number}</Text>
+                  ) : (
+                    <Feather name="lock" size={22} color="#FFFFFF" />
+                  )}
+                </View>
+
+                <View style={styles.chapterCopy}>
+                  <Text style={styles.chapterTitle} numberOfLines={1}>{chapterTitle}</Text>
+                  <Text style={[styles.chapterProgress, { color: chapter.complete ? '#2D6A4F' : gameTheme.colors.inkSoft }]}>
+                    {t('chapterWordsProgress', {
+                      done: chapter.completedCount,
+                      total: chapter.entries.length,
+                    })}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.actionBtn,
+                    {
+                      backgroundColor: chapter.complete
+                        ? '#06D6A0'
+                        : chapter.unlocked
+                          ? chapterColor.main
+                          : '#C7BFCC',
+                    },
+                  ]}
+                >
+                  {chapter.complete ? (
+                    <Feather name="check" size={20} color="#FFFFFF" />
+                  ) : chapter.unlocked ? (
+                    <Feather name="play" size={20} color="#FFFFFF" style={{ marginLeft: 2 }} />
+                  ) : (
+                    <Feather name="lock" size={18} color="#FFFFFF" />
+                  )}
+                </View>
+              </View>
+
+              {/* Animal Preview Row */}
+              <View style={styles.wordPreviewRow}>
+                {chapter.entries.map(({ word, globalIndex }) => {
+                  const learned = completedLevels.includes(globalIndex);
+                  return (
+                    <View key={word.id} style={styles.wordPreview}>
+                      <View style={styles.visualContainer}>
+                        <WordVisual word={word} style={styles.wordVisual} emojiSize={36} />
+                        {learned ? (
+                          <View style={styles.learnedBadge}>
+                            <Feather name="check" size={10} color="#FFFFFF" />
+                          </View>
+                        ) : null}
+                      </View>
+                      <Text style={styles.wordName} numberOfLines={1}>
+                        {word.spellings[locale]}
+                      </Text>
                     </View>
-                    <Text style={styles.wordName} numberOfLines={1}>{word.spellings[locale]}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </Pressable>
-        ))}
+                  );
+                })}
+              </View>
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </LinearGradient>
   );
@@ -127,26 +174,143 @@ export default function CategoryChaptersScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  headingRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 12, marginBottom: 10 },
-  categoryIcon: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  categoryEmoji: { fontSize: 36 },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 14,
+    marginBottom: 6,
+  },
+  categoryIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  categoryEmoji: { fontSize: 34 },
   headingCopy: { flex: 1 },
-  eyebrow: { color: gameTheme.colors.inkSoft, fontSize: 12, fontWeight: '800' },
-  title: { color: gameTheme.colors.ink, fontSize: 25, fontWeight: '900' },
-  list: { padding: 20, gap: 16 },
-  chapterCard: { borderRadius: 28, borderWidth: 3, borderBottomWidth: 7, padding: 14 },
-  lockedCard: { opacity: 0.76 },
-  pressedCard: { transform: [{ scale: 0.985 }, { translateY: 2 }] },
-  chapterTop: { flexDirection: 'row', alignItems: 'center', gap: 11 },
-  numberBadge: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
-  numberText: { color: '#FFFFFF', fontSize: 21, fontWeight: '900' },
-  chapterCopy: { flex: 1 },
-  chapterTitle: { color: gameTheme.colors.ink, fontSize: 17, fontWeight: '900' },
-  chapterProgress: { color: gameTheme.colors.inkSoft, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  playButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
-  wordPreviewRow: { flexDirection: 'row', gap: 7, marginTop: 13 },
-  wordPreview: { flex: 1, minWidth: 0, alignItems: 'center' },
-  wordVisual: { width: 48, height: 48 },
-  wordName: { width: '100%', color: gameTheme.colors.inkSoft, fontSize: 9, fontWeight: '800', textAlign: 'center', marginTop: 4 },
-  wordStatus: { position: 'absolute', right: 0, top: -2, width: 18, height: 18, borderRadius: 9, backgroundColor: '#DDD4C8', alignItems: 'center', justifyContent: 'center' },
+  title: { color: gameTheme.colors.ink, fontSize: 24, fontWeight: '900' },
+  subtitle: { color: gameTheme.colors.inkSoft, fontSize: 13, fontWeight: '700', marginTop: 1 },
+  guideWrapper: {
+    marginBottom: 4,
+  },
+  list: { paddingHorizontal: 18, paddingTop: 10, gap: 14 },
+  chapterCard: {
+    borderRadius: 26,
+    borderWidth: 2.5,
+    borderBottomWidth: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  lockedCard: {
+    opacity: 0.72,
+    borderBottomWidth: 4,
+  },
+  pressedCard: {
+    transform: [{ scale: 0.985 }, { translateY: 2 }],
+  },
+  chapterTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  habitatBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  habitatEmoji: {
+    fontSize: 26,
+  },
+  chapterNumText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  chapterCopy: {
+    flex: 1,
+  },
+  chapterTitle: {
+    color: gameTheme.colors.ink,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  chapterProgress: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  actionBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  wordPreviewRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  wordPreview: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+  },
+  visualContainer: {
+    width: 46,
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wordVisual: {
+    width: 44,
+    height: 44,
+  },
+  learnedBadge: {
+    position: 'absolute',
+    right: -2,
+    top: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#06D6A0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  wordName: {
+    width: '100%',
+    color: gameTheme.colors.inkSoft,
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginTop: 3,
+  },
 });

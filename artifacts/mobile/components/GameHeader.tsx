@@ -1,62 +1,33 @@
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
-import { useI18n } from '@/lib/i18n';
 import { gameTheme } from '@/constants/gameTheme';
 
 type GameHeaderProps = {
   onBack?: () => void;
-  onParentPress?: () => void;
 };
 
-export default function GameHeader({ onBack, onParentPress }: GameHeaderProps = {}) {
+export default function GameHeader({ onBack }: GameHeaderProps = {}) {
   const colors = useColors();
   const { coins } = useGameState();
-  const { t } = useI18n();
 
   return (
     <View style={styles.row}>
-      <View style={styles.identity}>
-        {onBack && (
+      <View style={styles.left}>
+        {onBack ? (
           <Pressable onPress={onBack} style={styles.backBtn} hitSlop={8} accessibilityRole="button">
             <Feather name="arrow-left" size={24} color={colors.primary} />
           </Pressable>
-        )}
-        <Pressable
-          onPress={() => router.replace('/(tabs)/journey')}
-          style={({ pressed }) => [
-            styles.avatar,
-            { backgroundColor: colors.muted },
-            pressed && styles.avatarPressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('backToHome')}
-          hitSlop={8}
-        >
-          <Image source={require('../assets/images/icon.png')} style={styles.avatarImage} />
-        </Pressable>
+        ) : <View style={styles.placeholder} />}
       </View>
 
       <View style={styles.actions}>
-        <View style={[styles.coinBadge, { backgroundColor: colors.accent }]}>
-          <Feather name="star" size={16} color={colors.accentForeground} />
-          <Text style={[styles.coinText, { color: colors.accentForeground }]}>
-            {coins} {t('coins')}
-          </Text>
+        <View style={[styles.coinBadge, { backgroundColor: '#FFD166' }]}>
+          <Text style={styles.coinStar}>⭐</Text>
+          <Text style={styles.coinText}>{coins}</Text>
         </View>
-        {onParentPress ? (
-          <Pressable
-            onPress={onParentPress}
-            style={styles.parentButton}
-            accessibilityRole="button"
-            accessibilityLabel={t('parentArea')}
-          >
-            <Feather name="shield" size={21} color={gameTheme.colors.coral} />
-          </Pressable>
-        ) : null}
       </View>
     </View>
   );
@@ -68,26 +39,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 14,
+    marginBottom: 12,
   },
-  identity: {
+  left: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+  placeholder: {
+    width: 44,
+    height: 44,
   },
-  avatarImage: {
-    width: 48,
-    height: 48,
-  },
-  avatarPressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
   backBtn: {
     width: gameTheme.touchTarget,
     height: gameTheme.touchTarget,
@@ -95,39 +56,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 4,
+    borderWidth: 2,
+    borderColor: '#EFE3D3',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
     elevation: 2,
   },
   coinBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     paddingHorizontal: 12,
-    minHeight: gameTheme.touchTarget,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#EAA812',
+  },
+  coinStar: {
+    fontSize: 14,
+  },
+  coinText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#8C5300',
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  parentButton: {
-    width: gameTheme.touchTarget,
-    height: gameTheme.touchTarget,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#F2D8D1',
-  },
-  coinText: {
-    fontSize: 14,
-    fontWeight: '800',
   },
 });

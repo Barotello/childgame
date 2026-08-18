@@ -1,41 +1,90 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import categories, { type CategoryId } from '@/constants/library';
+import categories, { type Category, type CategoryId } from '@/constants/library';
 import words from '@/constants/words';
 import { gameTheme } from '@/constants/gameTheme';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
-import { speakWord } from '@/lib/speech';
 import GameHeader from '@/components/GameHeader';
-import MascotGuide from '@/components/MascotGuide';
-import ParentGate from '@/components/ParentGate';
 import { chapterProgress } from '@/constants/curriculum';
 
-const CATEGORY_COLORS: Record<CategoryId, { main: string; pale: string; border: string }> = {
-  animals: { main: '#FF9D55', pale: '#FFF0E4', border: '#E57A2D' },
-  fruits: { main: '#8BCB55', pale: '#EFF9E7', border: '#5A9B2F' },
-  numbers: { main: '#59B3EA', pale: '#E9F6FE', border: '#3285BA' },
-  colors: { main: '#F05E7D', pale: '#FFF0F4', border: '#C63B5B' },
-  flags: { main: '#9B7AE0', pale: '#F2EDFC', border: '#7252B4' },
-  body: { main: '#F27DB1', pale: '#FFF0F7', border: '#C94F86' },
+const CATEGORY_COLORS: Record<CategoryId, { main: string; pale: string; border: string; glow: string }> = {
+  animals: { main: '#FF9D55', pale: '#FFF4E8', border: '#E57A2D', glow: '#FFE8D6' },
+  fruits: { main: '#8BCB55', pale: '#F4FAEE', border: '#5A9B2F', glow: '#E3F6D5' },
+  numbers: { main: '#59B3EA', pale: '#F0F8FE', border: '#3285BA', glow: '#D8EEFC' },
+  colors: { main: '#F05E7D', pale: '#FFF0F4', border: '#C63B5B', glow: '#FDE0E7' },
+  flags: { main: '#9B7AE0', pale: '#F6F2FD', border: '#7252B4', glow: '#E8DEF8' },
+  body: { main: '#F27DB1', pale: '#FFF2F8', border: '#C94F86', glow: '#FCDAEB' },
 };
+
+function CategoryBadgeVisual({ category }: { category: Category }) {
+  if (category.id === 'animals' && category.image) {
+    return <Image source={category.image} style={styles.illustrationImg} contentFit="contain" />;
+  }
+  if (category.id === 'fruits' && category.image) {
+    return <Image source={category.image} style={styles.illustrationImg} contentFit="contain" />;
+  }
+  if (category.id === 'numbers') {
+    return (
+      <View style={styles.numbersVisualWrap}>
+        <View style={[styles.numBlock, { backgroundColor: '#FF5E7E' }]}>
+          <Text style={styles.numBlockText}>1</Text>
+        </View>
+        <View style={[styles.numBlock, { backgroundColor: '#FFD166' }]}>
+          <Text style={styles.numBlockText}>2</Text>
+        </View>
+        <View style={[styles.numBlock, { backgroundColor: '#06D6A0' }]}>
+          <Text style={styles.numBlockText}>3</Text>
+        </View>
+      </View>
+    );
+  }
+  if (category.id === 'colors') {
+    return (
+      <View style={styles.colorsVisualWrap}>
+        <Text style={styles.paletteEmoji}>🎨</Text>
+        <View style={styles.colorDotsRow}>
+          <View style={[styles.colorDot, { backgroundColor: '#FF5E7E' }]} />
+          <View style={[styles.colorDot, { backgroundColor: '#FFD166' }]} />
+          <View style={[styles.colorDot, { backgroundColor: '#06D6A0' }]} />
+          <View style={[styles.colorDot, { backgroundColor: '#118AB2' }]} />
+          <View style={[styles.colorDot, { backgroundColor: '#9D4EDD' }]} />
+        </View>
+      </View>
+    );
+  }
+  if (category.id === 'flags') {
+    return (
+      <View style={styles.flagsVisualWrap}>
+        <Text style={styles.globeEmoji}>🌍</Text>
+        <View style={styles.flagMiniWrap}>
+          <Text style={styles.flagMiniEmoji}>🚩</Text>
+        </View>
+      </View>
+    );
+  }
+  if (category.id === 'body') {
+    return (
+      <View style={styles.bodyVisualWrap}>
+        <Text style={styles.handEmoji}>🖐️</Text>
+        <View style={styles.heartMiniWrap}>
+          <Text style={styles.heartMiniEmoji}>❤️</Text>
+        </View>
+      </View>
+    );
+  }
+  return <Text style={styles.categoryEmoji}>{category.emoji}</Text>;
+}
 
 export default function JourneyScreen() {
   const insets = useSafeAreaInsets();
-  const { t, locale } = useI18n();
-  const { completedLevels, dailyWords, dailyGoal, setSelectedCategory } = useGameState();
-  const [showParentGate, setShowParentGate] = useState(false);
-  const pathname = usePathname();
-  const missionDone = dailyWords >= dailyGoal;
-  const mascotMessage = missionDone ? t('missionComplete') : t('mascotWelcome');
-
-  useEffect(() => {
-    if (pathname !== '/journey') setShowParentGate(false);
-  }, [pathname]);
+  const { t } = useI18n();
+  const { completedLevels, setSelectedCategory } = useGameState();
 
   const playCategory = (category: CategoryId) => {
     setSelectedCategory(category);
@@ -45,34 +94,19 @@ export default function JourneyScreen() {
   return (
     <LinearGradient
       colors={[gameTheme.colors.cream, '#FFF1DB', gameTheme.colors.peach]}
-      style={[styles.root, { paddingTop: insets.top + 10 }]}
+      style={[styles.root, { paddingTop: insets.top + 20 }]}
     >
-      <GameHeader onParentPress={() => setShowParentGate(true)} />
-      <MascotGuide message={mascotMessage} onPress={() => speakWord(mascotMessage, locale)} />
-
-      <View style={styles.missionCard}>
-        <View style={styles.missionTop}>
-          <View style={styles.missionTitleRow}>
-            <View style={styles.missionIcon}>
-              <Feather name={missionDone ? 'award' : 'target'} size={22} color="#FFFFFF" />
-            </View>
-            <View>
-              <Text style={styles.missionTitle}>{t('todayMission')}</Text>
-              <Text style={styles.missionCaption}>
-                {t('missionProgress', { done: dailyWords, total: dailyGoal })}
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.missionReward}>+30 ★</Text>
-        </View>
-        <View style={styles.missionTrack}>
-          <View style={[styles.missionFill, { width: `${Math.min(1, dailyWords / dailyGoal) * 100}%` }]} />
-        </View>
+      <GameHeader />
+      
+      {/* Adventure Heading */}
+      <View style={styles.headingRow}>
+        <Text style={styles.heading}>{t('chooseAdventure')}</Text>
+        <Text style={styles.sparkleIcon}>✨</Text>
       </View>
 
-      <Text style={styles.heading}>{t('chooseAdventure')}</Text>
+      {/* Adventure Path with Illustrator Visual Cards */}
       <ScrollView
-        contentContainerStyle={[styles.path, { paddingBottom: insets.bottom + 126 }]}
+        contentContainerStyle={[styles.path, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
       >
         {categories.map((category, index) => {
@@ -85,11 +119,7 @@ export default function JourneyScreen() {
           ).length;
           const total = categoryWordIndexes.length;
           const chapters = chapterProgress(total, complete);
-          const visibleChapterCount = Math.min(5, chapters.totalChapters);
-          const visibleChapterStart = Math.min(
-            Math.max(0, chapters.currentChapter - 3),
-            Math.max(0, chapters.totalChapters - visibleChapterCount),
-          );
+          const isFinished = complete >= total && total > 0;
 
           return (
             <View
@@ -99,6 +129,7 @@ export default function JourneyScreen() {
               {index < categories.length - 1 ? (
                 <View style={[styles.pathLine, index % 2 === 0 ? styles.lineRight : styles.lineLeft]} />
               ) : null}
+
               <Pressable
                 onPress={() => playCategory(category.id)}
                 style={({ pressed }) => [
@@ -109,39 +140,38 @@ export default function JourneyScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t(category.titleKey)}
               >
-                <View style={[styles.emojiCircle, { backgroundColor: color.main }]}>
-                  <Text style={styles.categoryEmoji}>{category.emoji}</Text>
+                {/* Specific Category Theme Visual Badge */}
+                <View style={[styles.illustrationContainer, { backgroundColor: color.glow, borderColor: color.border }]}>
+                  <CategoryBadgeVisual category={category} />
                 </View>
+
+                {/* Island Details & Progress */}
                 <View style={styles.islandCopy}>
-                  <Text style={styles.categoryTitle}>{t(category.titleKey)}</Text>
+                  <View style={styles.categoryTitleRow}>
+                    <Text style={styles.categoryTitle}>{t(category.titleKey)}</Text>
+                    {isFinished ? (
+                      <View style={styles.trophyBadge}>
+                        <Text style={styles.trophyEmoji}>🏆</Text>
+                      </View>
+                    ) : null}
+                  </View>
+
                   <Text style={styles.categoryProgress}>
                     {t('wordsProgress', { done: complete, total })}
                   </Text>
+
                   <View style={styles.chapterRow}>
-                    <Text style={styles.chapterLabel}>
-                      {t('chapterProgress', {
-                        current: chapters.currentChapter,
-                        total: chapters.totalChapters,
-                      })}
-                    </Text>
-                    <View style={styles.chapterDots}>
-                      {Array.from({ length: visibleChapterCount }).map((_, offset) => {
-                        const chapterIndex = visibleChapterStart + offset;
-                        return (
-                        <View
-                          key={chapterIndex}
-                          style={[
-                            styles.chapterDot,
-                            {
-                              backgroundColor:
-                                chapterIndex < chapters.currentChapter ? color.main : '#E6DDCF',
-                            },
-                          ]}
-                        />
-                        );
-                      })}
+                    <View style={[styles.chapterPill, { backgroundColor: color.main }]}>
+                      <Text style={styles.chapterPillText}>
+                        {t('chapterProgress', {
+                          current: chapters.currentChapter,
+                          total: chapters.totalChapters,
+                        })}
+                      </Text>
                     </View>
                   </View>
+
+                  {/* Progress Bar */}
                   <View style={styles.smallTrack}>
                     <View
                       style={[
@@ -151,114 +181,250 @@ export default function JourneyScreen() {
                     />
                   </View>
                 </View>
+
+                {/* Play Button Icon */}
                 <View style={[styles.playCircle, { backgroundColor: color.main }]}>
-                  <Feather name="play" size={20} color="#FFFFFF" />
+                  <Feather name={isFinished ? 'check' : 'play'} size={22} color="#FFFFFF" style={isFinished ? {} : { marginLeft: 2 }} />
                 </View>
               </Pressable>
             </View>
           );
         })}
       </ScrollView>
-
-      <ParentGate
-        visible={showParentGate}
-        onClose={() => setShowParentGate(false)}
-        onSuccess={() => {
-          router.push('/settings');
-        }}
-      />
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  missionCard: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    backgroundColor: gameTheme.colors.white,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#F2DDBA',
-    padding: 15,
-    shadowColor: gameTheme.colors.ink,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  missionTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  missionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  missionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
-    backgroundColor: gameTheme.colors.coral,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  missionTitle: { color: gameTheme.colors.ink, fontSize: 16, fontWeight: '900' },
-  missionCaption: { color: gameTheme.colors.inkSoft, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  missionReward: { color: '#A67500', fontSize: 14, fontWeight: '900' },
-  missionTrack: {
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#F5ECDD',
-    overflow: 'hidden',
-    marginTop: 13,
-  },
-  missionFill: { height: '100%', borderRadius: 6, backgroundColor: gameTheme.colors.mint },
-  heading: {
-    color: gameTheme.colors.ink,
-    fontSize: 20,
-    fontWeight: '900',
-    paddingHorizontal: 22,
-    marginTop: 20,
+  guideWrapper: {
     marginBottom: 8,
   },
-  path: { paddingHorizontal: 20, paddingTop: 4, gap: 18 },
-  pathStop: { width: '88%', zIndex: 1 },
-  pathLeft: { alignSelf: 'flex-start' },
-  pathRight: { alignSelf: 'flex-end' },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 22,
+    marginTop: 6,
+    marginBottom: 10,
+    gap: 6,
+  },
+  heading: {
+    color: gameTheme.colors.ink,
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  sparkleIcon: {
+    fontSize: 18,
+  },
+  path: {
+    paddingHorizontal: 18,
+    paddingTop: 6,
+    gap: 20,
+  },
+  pathStop: {
+    width: '92%',
+    zIndex: 1,
+  },
+  pathLeft: {
+    alignSelf: 'flex-start',
+  },
+  pathRight: {
+    alignSelf: 'flex-end',
+  },
   pathLine: {
     position: 'absolute',
-    bottom: -30,
-    width: 82,
-    height: 42,
+    bottom: -32,
+    width: 84,
+    height: 44,
     borderBottomWidth: 5,
-    borderColor: '#E6CFAF',
+    borderColor: '#E8D5B8',
     borderStyle: 'dashed',
     zIndex: -1,
   },
-  lineRight: { right: -36, borderRightWidth: 5, borderBottomRightRadius: 34 },
-  lineLeft: { left: -36, borderLeftWidth: 5, borderBottomLeftRadius: 34 },
+  lineRight: {
+    right: -36,
+    borderRightWidth: 5,
+    borderBottomRightRadius: 34,
+  },
+  lineLeft: {
+    left: -36,
+    borderLeftWidth: 5,
+    borderBottomLeftRadius: 34,
+  },
   island: {
-    minHeight: 106,
+    minHeight: 114,
     borderRadius: 28,
     borderWidth: 3,
     borderBottomWidth: 7,
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    gap: 12,
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  islandPressed: { transform: [{ scale: 0.98 }, { translateY: 2 }] },
-  emojiCircle: {
-    width: 68,
-    height: 68,
+  islandPressed: {
+    transform: [{ scale: 0.98 }, { translateY: 2 }],
+  },
+  illustrationContainer: {
+    width: 78,
+    height: 78,
     borderRadius: 24,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  illustrationImg: {
+    width: '88%',
+    height: '88%',
+  },
+  numbersVisualWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+  },
+  numBlock: {
+    width: 21,
+    height: 32,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  numBlockText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  colorsVisualWrap: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  categoryEmoji: { fontSize: 38 },
-  islandCopy: { flex: 1 },
-  categoryTitle: { color: gameTheme.colors.ink, fontSize: 17, fontWeight: '900' },
-  categoryProgress: { color: gameTheme.colors.inkSoft, fontSize: 12, fontWeight: '700', marginTop: 3 },
-  chapterRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 5 },
-  chapterLabel: { color: gameTheme.colors.ink, fontSize: 10, fontWeight: '900' },
-  chapterDots: { flexDirection: 'row', gap: 3, flexShrink: 1 },
-  chapterDot: { width: 7, height: 7, borderRadius: 4 },
-  smallTrack: { height: 7, borderRadius: 4, backgroundColor: '#FFFFFF', overflow: 'hidden', marginTop: 8 },
-  smallFill: { height: '100%', borderRadius: 4 },
-  playCircle: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  paletteEmoji: {
+    fontSize: 34,
+  },
+  colorDotsRow: {
+    flexDirection: 'row',
+    gap: 3,
+    marginTop: 2,
+  },
+  colorDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  flagsVisualWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  globeEmoji: {
+    fontSize: 36,
+  },
+  flagMiniWrap: {
+    position: 'absolute',
+    bottom: -2,
+    right: -6,
+  },
+  flagMiniEmoji: {
+    fontSize: 16,
+  },
+  bodyVisualWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  handEmoji: {
+    fontSize: 34,
+  },
+  heartMiniWrap: {
+    position: 'absolute',
+    bottom: -2,
+    right: -4,
+  },
+  heartMiniEmoji: {
+    fontSize: 14,
+  },
+  categoryEmoji: {
+    fontSize: 40,
+  },
+  islandCopy: {
+    flex: 1,
+  },
+  categoryTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  categoryTitle: {
+    color: gameTheme.colors.ink,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  trophyBadge: {
+    backgroundColor: '#FFE8A3',
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  trophyEmoji: {
+    fontSize: 12,
+  },
+  categoryProgress: {
+    color: gameTheme.colors.inkSoft,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  chapterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  chapterPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  chapterPillText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  smallTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    overflow: 'hidden',
+    marginTop: 7,
+  },
+  smallFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  playCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 });
