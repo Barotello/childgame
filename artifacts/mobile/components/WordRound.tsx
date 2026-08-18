@@ -268,7 +268,11 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   };
 
   const imageWrapStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + revealProgress.value * 0.06 }],
+    transform: [{ scale: 1 + revealProgress.value * 0.08 }],
+  }));
+
+  const silhouetteStyle = useAnimatedStyle(() => ({
+    opacity: 1 - revealProgress.value,
   }));
 
   const emojiStyle = useAnimatedStyle(() => ({
@@ -311,26 +315,35 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
           ]}
         >
           <Animated.View style={[styles.imageWrap, imageWrapStyle]}>
-            {word.emoji ? (
+            {word.image ? (
+              <View style={styles.imageContainer}>
+                <Image source={word.image} style={styles.image} contentFit="contain" />
+                <Animated.View
+                  style={[StyleSheet.absoluteFillObject, styles.silhouetteOverlay, silhouetteStyle]}
+                  pointerEvents="none"
+                >
+                  <Image
+                    source={word.image}
+                    style={styles.image}
+                    contentFit="contain"
+                    tintColor="#2D3142"
+                  />
+                </Animated.View>
+              </View>
+            ) : word.swatch ? (
+              <Animated.View
+                style={[
+                  styles.swatchWrap,
+                  {
+                    backgroundColor: word.swatch,
+                    opacity: 0.6 + 0.4 * revealProgress.value,
+                  },
+                ]}
+              />
+            ) : (
               <Animated.Text style={[{ fontSize: 84, textAlign: 'center', lineHeight: 140 }, emojiStyle]}>
                 {word.emoji}
               </Animated.Text>
-            ) : word.swatch ? (
-              <Animated.View
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  backgroundColor: word.swatch,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }}
-              />
-            ) : (
-              <Image source={word.image} style={styles.image} contentFit="contain" />
             )}
           </Animated.View>
         </View>
@@ -347,8 +360,8 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
                 style={[
                   styles.slot,
                   {
-                    borderColor: value ? colors.success : colors.border,
-                    backgroundColor: value ? '#E4FBEE' : colors.background,
+                    borderColor: value ? '#38C6B0' : colors.border,
+                    backgroundColor: value ? '#E4FBEE' : '#F7F8FC',
                     width: dynamicTileSize,
                     height: dynamicTileSize,
                     borderRadius: dynamicTileSize / 2,
@@ -357,7 +370,9 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
                   },
                 ]}
               >
-                {value ? <Text style={[styles.slotLetter, { fontSize: dynamicTileSize * 0.42 }]}>{value}</Text> : null}
+                {value ? (
+                  <Text style={[styles.slotLetter, { fontSize: dynamicTileSize * 0.48 }]}>{value}</Text>
+                ) : null}
               </View>
             );
           })}
@@ -520,6 +535,29 @@ const styles = StyleSheet.create({
   imageWrap: {
     width: 140,
     height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageContainer: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  silhouetteOverlay: {
+    width: '100%',
+    height: '100%',
+  },
+  swatchWrap: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   image: {
     width: '100%',

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Platform, StyleSheet, Text } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -177,7 +177,8 @@ export default function LetterTile({
         accessibilityLabel={letter}
         accessibilityState={{ disabled: locked }}
       >
-        <Text style={[styles.letter, { fontSize: size * 0.45 }]}>{letter}</Text>
+        <View style={styles.glossHighlight} pointerEvents="none" />
+        <Text style={[styles.letter, { fontSize: size * 0.48 }]}>{letter}</Text>
       </Animated.View>
     </GestureDetector>
   );
@@ -188,14 +189,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.58)',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 5,
+    borderTopColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.45)',
+    borderRightColor: 'rgba(0, 0, 0, 0.12)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.24)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
     shadowRadius: 6,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  glossHighlight: {
+    position: 'absolute',
+    top: 2,
+    left: '18%',
+    right: '18%',
+    height: '28%',
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    borderRadius: 999,
   },
   letter: {
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1.5 },
+    textShadowRadius: 2,
   },
 });

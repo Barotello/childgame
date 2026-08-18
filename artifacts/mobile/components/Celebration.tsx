@@ -110,14 +110,26 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
       </View>
       <Animated.View style={[styles.card, cardStyle]}>
         <View style={styles.successBadge}>
-          <Feather name="check" size={26} color="#FFFFFF" />
+          <Feather name="star" size={26} color="#FFFFFF" />
         </View>
-        {word.emoji ? (
-          <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
-        ) : word.swatch ? (
-          <View style={{ width: 140, height: 140, borderRadius: 70, backgroundColor: word.swatch, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 }} />
-        ) : (
+        {word.image ? (
           <Image source={word.image} style={styles.image} contentFit="contain" />
+        ) : word.swatch ? (
+          <View
+            style={{
+              width: 140,
+              height: 140,
+              borderRadius: 70,
+              backgroundColor: word.swatch,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          />
+        ) : (
+          <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
         )}
         <Text style={styles.word}>{wordLabel}</Text>
         <Text style={styles.praise}>{praise}</Text>
@@ -125,7 +137,12 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
           <Feather name="volume-2" size={16} color={gameTheme.colors.sky} />
           <Text style={styles.fact}>{fact}</Text>
         </View>
-        {coinsEarned ? <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text> : null}
+        {coinsEarned ? (
+          <View style={styles.coinBadge}>
+            <Text style={styles.coinIcon}>🪙</Text>
+            <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text>
+          </View>
+        ) : null}
       </Animated.View>
     </View>
   );
@@ -183,11 +200,25 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: gameTheme.colors.coral,
   },
+  coinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7D6',
+    borderWidth: 2,
+    borderColor: '#FFE58F',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    gap: 6,
+    marginTop: 4,
+  },
+  coinIcon: {
+    fontSize: 18,
+  },
   coins: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#9A7200',
-    marginTop: 2,
+    fontWeight: '900',
+    color: '#8C6800',
   },
   factPill: {
     maxWidth: '96%',

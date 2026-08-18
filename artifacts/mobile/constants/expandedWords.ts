@@ -24,7 +24,6 @@ function simpleWords(
 
 // The base pack already contains 29 animals. These 71 complete the 100-word path.
 const ANIMALS: readonly SimpleSpec[] = [
-  ['anim_rabbit', 'tavşan', 'rabbit', '🐰'],
   ['anim_deer', 'geyik', 'deer', '🦌'],
   ['anim_goat', 'keçi', 'goat', '🐐'],
   ['anim_sheep', 'koyun', 'sheep', '🐑'],
@@ -104,9 +103,7 @@ const FRUITS: readonly SimpleSpec[] = [
   ['fruit_pear', 'armut', 'pear', '🍐'],
   ['fruit_peach', 'şeftali', 'peach', '🍑'],
   ['fruit_cherry', 'kiraz', 'cherry', '🍒'],
-  ['fruit_strawberry', 'çilek', 'strawberry', '🍓'],
   ['fruit_watermelon', 'karpuz', 'watermelon', '🍉'],
-  ['fruit_orange', 'portakal', 'orange', '🍊'],
   ['fruit_tangerine', 'mandalina', 'tangerine', '🍊'],
   ['fruit_pineapple', 'ananas', 'pineapple', '🍍'],
   ['fruit_pomegranate', 'nar', 'pomegranate', '🔴'],
@@ -273,7 +270,7 @@ export const expandedWords: WordItem[] = [
   ...simpleWords(
     'animals',
     ANIMALS.filter(([id]) => [
-      'anim_rabbit', 'anim_deer', 'anim_goat', 'anim_sheep', 'anim_camel',
+      'anim_crab', 'anim_deer', 'anim_goat', 'anim_sheep', 'anim_camel',
       'anim_donkey', 'anim_zebra', 'anim_snake', 'anim_frog', 'anim_seal',
       'anim_goose',
     ].includes(id)),
@@ -282,7 +279,7 @@ export const expandedWords: WordItem[] = [
     'fruits',
     FRUITS.filter(([id]) => [
       'fruit_apricot', 'fruit_pear', 'fruit_peach', 'fruit_cherry',
-      'fruit_orange', 'fruit_fig', 'fruit_plum', 'fruit_avocado',
+      'fruit_pineapple', 'fruit_fig', 'fruit_plum', 'fruit_avocado',
       'fruit_papaya', 'fruit_guava', 'fruit_date', 'fruit_quince',
       'fruit_mulberry',
     ].includes(id)),

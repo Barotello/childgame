@@ -86,12 +86,21 @@ const baseWords: WordItem[] = [
     id: 'anim_lion',
     spellings: { tr: 'aslan', en: 'lion', fr: 'lion', es: 'león', it: 'leone', de: 'löwe' },
     category: 'animals',
+    image: require('../assets/images/word-aslan.png'),
     emoji: '🦁',
+  },
+  {
+    id: 'anim_rabbit',
+    spellings: { tr: 'tavşan', en: 'rabbit', fr: 'lapin', es: 'conejo', it: 'coniglio', de: 'hase' },
+    category: 'animals',
+    image: require('../assets/images/word-tavsan.png'),
+    emoji: '🐰',
   },
   {
     id: 'anim_horse',
     spellings: { tr: 'at', en: 'horse', fr: 'cheval', es: 'caballo', it: 'cavallo', de: 'pferd' },
     category: 'animals',
+    image: require('../assets/images/word-at.png'),
     emoji: '🐴',
   },
   {
@@ -164,6 +173,7 @@ const baseWords: WordItem[] = [
     id: 'anim_dog',
     spellings: { tr: 'köpek', en: 'dog', fr: 'chien', es: 'perro', it: 'cane', de: 'hund' },
     category: 'animals',
+    image: require('../assets/images/word-kopek.png'),
     emoji: '🐶',
   },
   {
@@ -210,6 +220,27 @@ const baseWords: WordItem[] = [
     emoji: '🍎',
   },
   {
+    id: 'fruit_strawberry',
+    spellings: { tr: 'çilek', en: 'strawberry', fr: 'fraise', es: 'fresa', it: 'fragola', de: 'erdbeere' },
+    category: 'fruits',
+    image: require('../assets/images/word-cilek.png'),
+    emoji: '🍓',
+  },
+  {
+    id: 'fruit_orange',
+    spellings: { tr: 'portakal', en: 'orange', fr: 'orange', es: 'naranja', it: 'arancia', de: 'orange' },
+    category: 'fruits',
+    image: require('../assets/images/word-portakal.png'),
+    emoji: '🍊',
+  },
+  {
+    id: 'fruit_banana',
+    spellings: { tr: 'muz', en: 'banana', fr: 'banane', es: 'plátano', it: 'banana', de: 'banane' },
+    category: 'fruits',
+    image: require('../assets/images/word-muz.png'),
+    emoji: '🍌',
+  },
+  {
     id: 'fruit_melon',
     spellings: { tr: 'kavun', en: 'melon', fr: 'melon', es: 'melón', it: 'melone', de: 'melone' },
     category: 'fruits',
@@ -232,12 +263,6 @@ const baseWords: WordItem[] = [
     spellings: { tr: 'mango', en: 'mango', fr: 'mangue', es: 'mango', it: 'mango', de: 'mango' },
     category: 'fruits',
     emoji: '🥭',
-  },
-  {
-    id: 'fruit_banana',
-    spellings: { tr: 'muz', en: 'banana', fr: 'banane', es: 'plátano', it: 'banana', de: 'banane' },
-    category: 'fruits',
-    emoji: '🍌',
   },
   {
     id: 'fruit_grape',
