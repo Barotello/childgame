@@ -71,7 +71,11 @@ function ChoiceCard({
           pressed && !locked && !isWrong && styles.choicePressed,
         ]}
       >
-        <WordVisual word={choice} style={styles.visual} emojiSize={68} />
+        <WordVisual
+          word={choice}
+          style={styles.visual}
+          emojiSize={choice.category === 'flags' ? 98 : 82}
+        />
         {isWrong ? (
           <View style={styles.statusWrongBadge}>
             <Feather name="x" size={18} color="#FFFFFF" />
@@ -202,7 +206,11 @@ export default function PictureChoiceRound({ word, mode, onComplete }: PictureCh
             </View>
 
             <View style={styles.heroImageWrap}>
-              <WordVisual word={word} style={styles.heroVisual} emojiSize={125} />
+              <WordVisual
+                word={word}
+                style={styles.heroVisual}
+                emojiSize={word.category === 'flags' ? 165 : 135}
+              />
             </View>
 
             <View style={styles.heroLabelRow}>

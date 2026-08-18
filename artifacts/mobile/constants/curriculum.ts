@@ -100,6 +100,41 @@ export const FLAG_CHAPTER_THEMES: readonly ChapterTheme[] = [
   },
 ];
 
+export const FRUIT_CHAPTER_THEMES: readonly ChapterTheme[] = [
+  {
+    id: 'fruits_level_1',
+    emoji: '🍎',
+    badge: '🍎 🍌',
+    titleKey: 'chapterFruitsOrchardTitle',
+    descKey: 'chapterFruitsOrchardDesc',
+    colors: { main: '#E63946', pale: '#FFF2F4', border: '#C0202D' },
+  },
+  {
+    id: 'fruits_level_2',
+    emoji: '🍋',
+    badge: '🍋 🍇',
+    titleKey: 'chapterFruitsTropicalTitle',
+    descKey: 'chapterFruitsTropicalDesc',
+    colors: { main: '#FFB703', pale: '#FFFBEB', border: '#D97706' },
+  },
+  {
+    id: 'fruits_level_3',
+    emoji: '🍍',
+    badge: '🍍 🥝',
+    titleKey: 'chapterFruitsCitrusTitle',
+    descKey: 'chapterFruitsCitrusDesc',
+    colors: { main: '#FB8500', pale: '#FFF5EB', border: '#C45700' },
+  },
+  {
+    id: 'fruits_level_4',
+    emoji: '🥑',
+    badge: '🥭 🥑',
+    titleKey: 'chapterFruitsSummerTitle',
+    descKey: 'chapterFruitsSummerDesc',
+    colors: { main: '#06D6A0', pale: '#EDFAF5', border: '#039E75' },
+  },
+];
+
 export type CategoryChapter = {
   number: number;
   theme?: ChapterTheme;
@@ -137,6 +172,7 @@ export function buildCategoryChapters(
 
   const isAnimals = category === 'animals';
   const isFlags = category === 'flags';
+  const isFruits = category === 'fruits';
   const chapters: CategoryChapter[] = [];
 
   for (let start = 0; start < entries.length; start += WORDS_PER_CHAPTER) {
@@ -150,7 +186,9 @@ export function buildCategoryChapters(
       ? ANIMAL_CHAPTER_THEMES[chapterIndex]
       : isFlags && chapterIndex < FLAG_CHAPTER_THEMES.length
         ? FLAG_CHAPTER_THEMES[chapterIndex]
-        : undefined;
+        : isFruits && chapterIndex < FRUIT_CHAPTER_THEMES.length
+          ? FRUIT_CHAPTER_THEMES[chapterIndex]
+          : undefined;
 
     chapters.push({
       number: chapterIndex + 1,

@@ -223,12 +223,22 @@ const baseWords: WordItem[] = [
     category: 'animals',
     emoji: '🐹',
   },
+  // ==========================================
+  // FRUITS — CHAPTER 1: En Sevilen Meyveler 🍎 (Level 1 - Easiest)
+  // ==========================================
   {
     id: 'elma',
     spellings: { tr: 'elma', en: 'apple', fr: 'pomme', es: 'manzana', it: 'mela', de: 'apfel' },
     category: 'fruits',
     image: require('../assets/images/word-elma.png'),
     emoji: '🍎',
+  },
+  {
+    id: 'fruit_banana',
+    spellings: { tr: 'muz', en: 'banana', fr: 'banane', es: 'plátano', it: 'banana', de: 'banane' },
+    category: 'fruits',
+    image: require('../assets/images/word-muz.png'),
+    emoji: '🍌',
   },
   {
     id: 'fruit_strawberry',
@@ -245,11 +255,60 @@ const baseWords: WordItem[] = [
     emoji: '🍊',
   },
   {
-    id: 'fruit_banana',
-    spellings: { tr: 'muz', en: 'banana', fr: 'banane', es: 'plátano', it: 'banana', de: 'banane' },
+    id: 'fruit_watermelon',
+    spellings: { tr: 'karpuz', en: 'watermelon', fr: 'pastèque', es: 'sandía', it: 'anguria', de: 'wassermelone' },
     category: 'fruits',
-    image: require('../assets/images/word-muz.png'),
-    emoji: '🍌',
+    emoji: '🍉',
+  },
+
+  // ==========================================
+  // FRUITS — CHAPTER 2: Tanıdık Lezzetler 🍋 (Level 2 - Easy)
+  // ==========================================
+  {
+    id: 'fruit_lemon',
+    spellings: { tr: 'limon', en: 'lemon', fr: 'citron', es: 'limón', it: 'limone', de: 'zitrone' },
+    category: 'fruits',
+    emoji: '🍋',
+  },
+  {
+    id: 'fruit_grape',
+    spellings: { tr: 'üzüm', en: 'grape', fr: 'raisin', es: 'uva', it: 'uva', de: 'traube' },
+    category: 'fruits',
+    emoji: '🍇',
+  },
+  {
+    id: 'fruit_cherry',
+    spellings: { tr: 'kiraz', en: 'cherry', fr: 'cerise', es: 'cereza', it: 'ciliegia', de: 'kirsche' },
+    category: 'fruits',
+    emoji: '🍒',
+  },
+  {
+    id: 'fruit_pear',
+    spellings: { tr: 'armut', en: 'pear', fr: 'poire', es: 'pera', it: 'pera', de: 'birne' },
+    category: 'fruits',
+    emoji: '🍐',
+  },
+  {
+    id: 'fruit_peach',
+    spellings: { tr: 'şeftali', en: 'peach', fr: 'pêche', es: 'melocotón', it: 'pesca', de: 'pfirsich' },
+    category: 'fruits',
+    emoji: '🍑',
+  },
+
+  // ==========================================
+  // FRUITS — CHAPTER 3: Meyve Kaşifleri 🍍 (Level 3 - Medium)
+  // ==========================================
+  {
+    id: 'fruit_pineapple',
+    spellings: { tr: 'ananas', en: 'pineapple', fr: 'ananas', es: 'piña', it: 'ananas', de: 'ananas' },
+    category: 'fruits',
+    emoji: '🍍',
+  },
+  {
+    id: 'fruit_tangerine',
+    spellings: { tr: 'mandalina', en: 'tangerine', fr: 'mandarine', es: 'mandarina', it: 'mandarino', de: 'mandarine' },
+    category: 'fruits',
+    emoji: '🍊',
   },
   {
     id: 'fruit_melon',
@@ -264,11 +323,15 @@ const baseWords: WordItem[] = [
     emoji: '🥝',
   },
   {
-    id: 'fruit_lemon',
-    spellings: { tr: 'limon', en: 'lemon', fr: 'citron', es: 'limón', it: 'limone', de: 'zitrone' },
+    id: 'fruit_plum',
+    spellings: { tr: 'erik', en: 'plum', fr: 'prune', es: 'ciruela', it: 'prugna', de: 'pflaume' },
     category: 'fruits',
-    emoji: '🍋',
+    emoji: '🟣',
   },
+
+  // ==========================================
+  // FRUITS — CHAPTER 4: Usta Kaşif Meyveleri 🥑 (Level 4 - Challenging)
+  // ==========================================
   {
     id: 'fruit_mango',
     spellings: { tr: 'mango', en: 'mango', fr: 'mangue', es: 'mango', it: 'mango', de: 'mango' },
@@ -276,10 +339,28 @@ const baseWords: WordItem[] = [
     emoji: '🥭',
   },
   {
-    id: 'fruit_grape',
-    spellings: { tr: 'üzüm', en: 'grape', fr: 'raisin', es: 'uva', it: 'uva', de: 'traube' },
+    id: 'fruit_pomegranate',
+    spellings: { tr: 'nar', en: 'pomegranate', fr: 'grenade', es: 'granada', it: 'melagrana', de: 'granatapfel' },
     category: 'fruits',
-    emoji: '🍇',
+    emoji: '🔴',
+  },
+  {
+    id: 'fruit_avocado',
+    spellings: { tr: 'avokado', en: 'avocado', fr: 'avocat', es: 'aguacate', it: 'avocado', de: 'avocado' },
+    category: 'fruits',
+    emoji: '🥑',
+  },
+  {
+    id: 'fruit_coconut',
+    spellings: { tr: 'hindistan cevizi', en: 'coconut', fr: 'noix de coco', es: 'coco', it: 'cocco', de: 'kokosnuss' },
+    category: 'fruits',
+    emoji: '🥥',
+  },
+  {
+    id: 'fruit_blueberry',
+    spellings: { tr: 'yaban mersini', en: 'blueberry', fr: 'myrtille', es: 'arándano', it: 'mirtillo', de: 'heidelbeere' },
+    category: 'fruits',
+    emoji: '🫐',
   },
   {
     id: 'n6',
