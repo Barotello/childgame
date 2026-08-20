@@ -1,6 +1,6 @@
 # Gizlilik Özeti
 
-Kelime Bulmaca çocukların kişisel bilgilerini istemez, reklam göstermez ve
+Mino: Word Adventure çocukların kişisel bilgilerini istemez, reklam göstermez ve
 uygulama içi davranışları uzak bir sunucuya göndermez. Oyun ilerlemesi, dil,
 ses ve ebeveyn tercihleri yalnızca cihazdaki yerel depolamada tutulur.
 

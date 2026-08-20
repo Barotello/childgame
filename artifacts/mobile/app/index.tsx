@@ -228,8 +228,8 @@ export default function WelcomeScreen() {
             />
           </View>
           <View style={{ marginTop: 8 }}>
-            <PlayfulText text="Word" baseSize={44} />
-            <PlayfulText text="Builder" baseSize={40} />
+            <PlayfulText text="Mino" baseSize={46} />
+            <PlayfulText text="Words" baseSize={40} />
           </View>
           <Text style={styles.subtitle}>{t('brandKids')}</Text>
 

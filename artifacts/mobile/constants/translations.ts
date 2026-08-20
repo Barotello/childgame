@@ -15,7 +15,7 @@ export const LOCALE_SPEECH: Record<Locale, string> = {
 };
 
 const en = {
-  appTitle: 'Word\nPuzzle',
+  appTitle: 'Mino\nWords',
   play: 'Play',
   library: 'Library',
   store: 'Store',

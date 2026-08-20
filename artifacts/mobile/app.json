@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Kelime Bulmaca",
-    "description": "4–7 yaş çocuklar için çevrimdışı, reklamsız kelime öğrenme oyunu.",
-    "slug": "mobile",
+    "name": "Mino: Word Adventure",
+    "description": "Fun, offline & ad-free English word puzzle adventure for kids ages 4-7 with Mino.",
+    "slug": "mino-word-adventure",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
