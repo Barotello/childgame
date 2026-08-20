@@ -1,64 +1,66 @@
-import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useGameState } from '@/lib/gameState';
-import { useI18n } from '@/lib/i18n';
 import { gameTheme } from '@/constants/gameTheme';
+import ChildProfileModal from '@/components/ChildProfileModal';
 
 type GameHeaderProps = {
   onBack?: () => void;
-  onParentPress?: () => void;
 };
 
-export default function GameHeader({ onBack, onParentPress }: GameHeaderProps = {}) {
+export default function GameHeader({ onBack }: GameHeaderProps = {}) {
   const colors = useColors();
-  const { coins } = useGameState();
-  const { t } = useI18n();
+  const { coins, profile } = useGameState();
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   return (
-    <View style={styles.row}>
-      <View style={styles.identity}>
-        {onBack && (
-          <Pressable onPress={onBack} style={styles.backBtn} hitSlop={8} accessibilityRole="button">
-            <Feather name="arrow-left" size={24} color={colors.primary} />
+    <>
+      <View style={styles.row}>
+        <View style={styles.left}>
+          {onBack ? (
+            <Pressable onPress={onBack} style={styles.backBtn} hitSlop={8} accessibilityRole="button">
+              <Feather name="arrow-left" size={24} color={colors.primary} />
+            </Pressable>
+          ) : null}
+
+          {/* Child Hero Profile Pill */}
+          <Pressable
+            onPress={() => setShowProfileModal(true)}
+            style={({ pressed }) => [
+              styles.profilePill,
+              { borderColor: profile.themeColor || '#FF9F1C' },
+              pressed && { transform: [{ scale: 0.95 }] },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Profile: ${profile.name || 'Hero'}`}
+          >
+            <View style={[styles.avatarBadge, { backgroundColor: '#FFF4E8' }]}>
+              <Text style={styles.avatarEmoji}>{profile.avatarEmoji || '🦁'}</Text>
+            </View>
+            <View style={styles.profileTextWrap}>
+              <Text style={styles.profileName} numberOfLines={1}>
+                {profile.name || 'Hero'}
+              </Text>
+              <Text style={styles.symbolEmoji}>{profile.symbolEmoji || '⭐'}</Text>
+            </View>
           </Pressable>
-        )}
-        <Pressable
-          onPress={() => router.replace('/(tabs)/journey')}
-          style={({ pressed }) => [
-            styles.avatar,
-            { backgroundColor: colors.muted },
-            pressed && styles.avatarPressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('backToHome')}
-          hitSlop={8}
-        >
-          <Image source={require('../assets/images/icon.png')} style={styles.avatarImage} />
-        </Pressable>
+        </View>
+
+        <View style={styles.actions}>
+          <View style={[styles.coinBadge, { backgroundColor: '#FFD166' }]}>
+            <Text style={styles.coinStar}>⭐</Text>
+            <Text style={styles.coinText}>{coins}</Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.actions}>
-        <View style={[styles.coinBadge, { backgroundColor: colors.accent }]}>
-          <Feather name="star" size={16} color={colors.accentForeground} />
-          <Text style={[styles.coinText, { color: colors.accentForeground }]}>
-            {coins} {t('coins')}
-          </Text>
-        </View>
-        {onParentPress ? (
-          <Pressable
-            onPress={onParentPress}
-            style={styles.parentButton}
-            accessibilityRole="button"
-            accessibilityLabel={t('parentArea')}
-          >
-            <Feather name="shield" size={21} color={gameTheme.colors.coral} />
-          </Pressable>
-        ) : null}
-      </View>
-    </View>
+      <ChildProfileModal
+        visible={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
+    </>
   );
 }
 
@@ -67,27 +69,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 14,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
-  identity: {
+  left: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flex: 1,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: 48,
-    height: 48,
-  },
-  avatarPressed: { opacity: 0.78, transform: [{ scale: 0.94 }] },
   backBtn: {
     width: gameTheme.touchTarget,
     height: gameTheme.touchTarget,
@@ -95,39 +85,79 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 4,
+    borderWidth: 2,
+    borderColor: '#EFE3D3',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  profilePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderWidth: 2,
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+    maxWidth: 180,
+  },
+  avatarBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarEmoji: {
+    fontSize: 20,
+  },
+  profileTextWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexShrink: 1,
+  },
+  profileName: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#3D315B',
+    flexShrink: 1,
+  },
+  symbolEmoji: {
+    fontSize: 13,
   },
   coinBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     paddingHorizontal: 12,
-    minHeight: gameTheme.touchTarget,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#EAA812',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+  },
+  coinStar: {
+    fontSize: 14,
+  },
+  coinText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#8C5300',
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  parentButton: {
-    width: gameTheme.touchTarget,
-    height: gameTheme.touchTarget,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#F2D8D1',
-  },
-  coinText: {
-    fontSize: 14,
-    fontWeight: '800',
   },
 });

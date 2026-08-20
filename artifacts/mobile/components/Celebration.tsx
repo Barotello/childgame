@@ -13,6 +13,7 @@ import Animated, {
 import type { WordItem } from '@/constants/words';
 import { translations } from '@/constants/translations';
 import { useI18n } from '@/lib/i18n';
+import { useGameState } from '@/lib/gameState';
 import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
 import { speakTextAndWait } from '@/lib/speech';
@@ -58,8 +59,12 @@ type CelebrationProps = {
 
 export default function Celebration({ word, coinsEarned, onNarrationComplete }: CelebrationProps) {
   const { locale, t } = useI18n();
+  const { profile } = useGameState();
   const praiseList = translations[locale].praise;
-  const praise = useMemo(() => praiseList[Math.floor(Math.random() * praiseList.length)], [praiseList]);
+  const praise = useMemo(() => {
+    const raw = praiseList[Math.floor(Math.random() * praiseList.length)];
+    return profile.name ? `${raw} ${profile.name}!` : raw;
+  }, [praiseList, profile.name]);
   const particles = useMemo(buildParticles, []);
   const scale = useSharedValue(0.6);
   const wordLabel = word.spellings[locale].toLocaleUpperCase(locale);
@@ -110,7 +115,7 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
       </View>
       <Animated.View style={[styles.card, cardStyle]}>
         <View style={styles.successBadge}>
-          <Feather name="star" size={26} color="#FFFFFF" />
+          <Text style={{ fontSize: 24 }}>{profile.avatarEmoji || '⭐'}</Text>
         </View>
         {word.image ? (
           <Image source={word.image} style={styles.image} contentFit="contain" />
@@ -139,7 +144,7 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
         </View>
         {coinsEarned ? (
           <View style={styles.coinBadge}>
-            <Text style={styles.coinIcon}>🪙</Text>
+            <Text style={styles.coinIcon}>⭐</Text>
             <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text>
           </View>
         ) : null}

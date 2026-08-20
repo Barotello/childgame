@@ -28,6 +28,7 @@ export type LibraryItem = {
 export type Category = {
   id: CategoryId;
   emoji: string;
+  image?: any;
   titleKey: 'categoryAnimals' | 'categoryFruits' | 'categoryNumbers' | 'categoryColors' | 'categoryFlags' | 'categoryBody';
   items: LibraryItem[];
 };
@@ -35,7 +36,8 @@ export type Category = {
 const categories: Category[] = [
   {
     id: 'animals',
-    emoji: '🐶',
+    emoji: '🦁',
+    image: require('../assets/images/lion.png'),
     titleKey: 'categoryAnimals',
     items: words.filter((w) => w.category === 'animals').map((w) => ({
       id: w.id,
@@ -47,7 +49,8 @@ const categories: Category[] = [
   },
   {
     id: 'fruits',
-    emoji: '🍎',
+    emoji: '🍓',
+    image: require('../assets/images/strawberry.png'),
     titleKey: 'categoryFruits',
     items: words.filter((w) => w.category === 'fruits').map((w) => ({
       id: w.id,
@@ -95,7 +98,8 @@ const categories: Category[] = [
   },
   {
     id: 'body',
-    emoji: '🫀',
+    emoji: '🖐️',
+    image: require('../assets/images/child.png'),
     titleKey: 'categoryBody',
     items: words.filter((w) => w.category === 'body').map((w) => ({
       id: w.id,

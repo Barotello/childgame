@@ -25,6 +25,30 @@ function localDayKey() {
   return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 }
 
+export type ChildProfile = {
+  name: string;
+  avatarId: string;
+  avatarEmoji: string;
+  avatarLabel: string;
+  symbolId: string;
+  symbolEmoji: string;
+  symbolLabel: string;
+  themeColor: string;
+  isCreated: boolean;
+};
+
+export const DEFAULT_CHILD_PROFILE: ChildProfile = {
+  name: 'Hero',
+  avatarId: 'lion',
+  avatarEmoji: '🦁',
+  avatarLabel: 'Leo Lion',
+  symbolId: 'star',
+  symbolEmoji: '⭐',
+  symbolLabel: 'Star',
+  themeColor: '#FF9F1C',
+  isCreated: false,
+};
+
 type PersistedState = {
   coins: number;
   highestUnlocked: number;
@@ -41,6 +65,7 @@ type PersistedState = {
   dailyRewardClaimed: boolean;
   screenTimeMinutes: number;
   learningRecords: LearningRecords;
+  profile: ChildProfile;
 };
 
 const FIRST_ANIMAL_INDEX = Math.max(
@@ -49,7 +74,7 @@ const FIRST_ANIMAL_INDEX = Math.max(
 );
 
 const DEFAULT_STATE: PersistedState = {
-  coins: 20,
+  coins: 0,
   highestUnlocked: 0,
   completedLevels: [],
   hintTokens: 1,
@@ -64,6 +89,7 @@ const DEFAULT_STATE: PersistedState = {
   dailyRewardClaimed: false,
   screenTimeMinutes: 20,
   learningRecords: {},
+  profile: DEFAULT_CHILD_PROFILE,
 };
 
 type GameStateContextValue = PersistedState & {
@@ -88,6 +114,8 @@ type GameStateContextValue = PersistedState & {
   toggleMute: () => void;
   setDailyGoal: (goal: number) => void;
   setScreenTimeMinutes: (minutes: number) => void;
+  setChildProfile: (profile: Partial<ChildProfile>) => void;
+  resetChildProfile: () => void;
 };
 
 const GameStateContext = createContext<GameStateContextValue | null>(null);
@@ -104,6 +132,13 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
           const parsed = JSON.parse(raw) as Partial<PersistedState>;
           const merged = { ...DEFAULT_STATE, ...parsed };
           merged.learningRecords = parsed.learningRecords ?? {};
+          merged.profile = { ...DEFAULT_CHILD_PROFILE, ...(parsed.profile ?? {}) };
+
+          // If the player has not completed any levels and has legacy default coins (20), reset to 0
+          if (merged.completedLevels.length === 0 && (parsed.coins === 20 || parsed.coins === undefined)) {
+            merged.coins = 0;
+          }
+
           if (merged.dailyDate !== localDayKey()) {
             merged.dailyDate = localDayKey();
             merged.dailyWords = 0;
@@ -317,6 +352,22 @@ export function GameStateProvider({ children }: { children: React.ReactNode }) {
         setState((prev) => ({
           ...prev,
           screenTimeMinutes: allowed.includes(minutes) ? minutes : 20,
+        }));
+      },
+      setChildProfile: (profileUpdate: Partial<ChildProfile>) => {
+        setState((prev) => ({
+          ...prev,
+          profile: {
+            ...prev.profile,
+            ...profileUpdate,
+            isCreated: true,
+          },
+        }));
+      },
+      resetChildProfile: () => {
+        setState((prev) => ({
+          ...prev,
+          profile: DEFAULT_CHILD_PROFILE,
         }));
       },
     };

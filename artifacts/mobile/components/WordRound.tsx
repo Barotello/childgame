@@ -23,11 +23,6 @@ const TILE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#FF8FB1', '#38
 
 const DISTRACTOR_POOLS: Record<Locale, string[]> = {
   en: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
-  tr: 'ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ'.split(''),
-  fr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÇÉÈÊËÎÏÔÖÙÛÜ'.split(''),
-  es: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑÜ'.split(''),
-  it: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÉÌÒÙ'.split(''),
-  de: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split(''),
 };
 
 const DISTRACTOR_COUNT = 2;

@@ -3,9 +3,9 @@ import { LOCALES, type Locale } from './translations';
 
 type SimpleSpec = readonly [id: string, tr: string, en: string, emoji: string];
 
-function spellings(tr: string, en: string): Record<Locale, string> {
+function spellings(_tr: string, en: string): Record<Locale, string> {
   // International names are a safe fallback until a language-specific editorial pass.
-  return { tr, en, fr: en, es: en, it: en, de: en };
+  return { en };
 }
 
 function simpleWords(
@@ -274,15 +274,5 @@ export const expandedWords: WordItem[] = [
       'anim_donkey', 'anim_zebra', 'anim_snake', 'anim_frog', 'anim_seal',
       'anim_goose',
     ].includes(id)),
-  ),
-  ...simpleWords(
-    'fruits',
-    FRUITS.filter(([id]) => [
-      'fruit_apricot', 'fruit_pear', 'fruit_peach', 'fruit_cherry',
-      'fruit_pineapple', 'fruit_fig', 'fruit_plum', 'fruit_avocado',
-      'fruit_papaya', 'fruit_guava', 'fruit_date', 'fruit_quince',
-      'fruit_mulberry',
-    ].includes(id)),
-    false,
   ),
 ];
