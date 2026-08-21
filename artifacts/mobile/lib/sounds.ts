@@ -11,6 +11,7 @@ import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-aud
 let correctPlayer: AudioPlayer | null = null;
 let wrongPlayer: AudioPlayer | null = null;
 let celebratePlayer: AudioPlayer | null = null;
+let chapterCompletedPlayer: AudioPlayer | null = null;
 let audioModeReady = false;
 let muted = false;
 
@@ -28,7 +29,7 @@ async function ensureAudioMode() {
   }
 }
 
-function getPlayer(kind: 'correct' | 'wrong' | 'celebrate'): AudioPlayer {
+function getPlayer(kind: 'correct' | 'wrong' | 'celebrate' | 'chapter-completed'): AudioPlayer {
   if (kind === 'correct') {
     if (!correctPlayer) {
       correctPlayer = createAudioPlayer(require('../assets/sounds/correct.mp3'));
@@ -41,13 +42,19 @@ function getPlayer(kind: 'correct' | 'wrong' | 'celebrate'): AudioPlayer {
     }
     return wrongPlayer;
   }
+  if (kind === 'chapter-completed') {
+    if (!chapterCompletedPlayer) {
+      chapterCompletedPlayer = createAudioPlayer(require('../assets/sounds/chapter-completed.wav'));
+    }
+    return chapterCompletedPlayer;
+  }
   if (!celebratePlayer) {
     celebratePlayer = createAudioPlayer(require('../assets/sounds/celebrate.mp3'));
   }
   return celebratePlayer;
 }
 
-function playSound(kind: 'correct' | 'wrong' | 'celebrate') {
+function playSound(kind: 'correct' | 'wrong' | 'celebrate' | 'chapter-completed') {
   if (muted) return;
   ensureAudioMode().finally(() => {
     try {
@@ -71,3 +78,8 @@ export function playWrongSound() {
 export function playCelebrateSound() {
   playSound('celebrate');
 }
+
+export function playChapterCompletedSound() {
+  playSound('chapter-completed');
+}
+

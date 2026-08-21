@@ -119,6 +119,16 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
         </View>
         {word.image ? (
           <Image source={word.image} style={styles.image} contentFit="contain" />
+        ) : word.category === 'flags' || word.id.startsWith('flag_') ? (
+          <View style={styles.celebrationFlagContainer}>
+            <View style={styles.celebrationFlagInnerCard}>
+              <Image
+                source={{ uri: `https://flagcdn.com/w320/${word.id.replace('flag_', '').toLowerCase()}.png` }}
+                style={styles.celebrationFlagImage}
+                contentFit="contain"
+              />
+            </View>
+          </View>
         ) : word.swatch ? (
           <View
             style={{
@@ -126,13 +136,31 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
               height: 140,
               borderRadius: 70,
               backgroundColor: word.swatch,
+              borderWidth: 6,
+              borderColor: word.swatch === '#FFFFFF' ? '#D8CFE6' : '#FFFFFF',
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 8,
-              elevation: 4,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.22,
+              shadowRadius: 10,
+              elevation: 6,
+              overflow: 'hidden',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
+          >
+            <View
+              style={{
+                position: 'absolute',
+                top: 14,
+                left: 20,
+                width: 50,
+                height: 30,
+                borderRadius: 99,
+                backgroundColor: 'rgba(255, 255, 255, 0.45)',
+                transform: [{ rotate: '-25deg' }],
+              }}
+            />
+          </View>
         ) : (
           <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
         )}
@@ -260,5 +288,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.24,
     shadowRadius: 8,
     elevation: 8,
+  },
+  celebrationFlagContainer: {
+    width: 184,
+    height: 124,
+    borderRadius: 18,
+    borderWidth: 2.5,
+    borderColor: '#E2D9CD',
+    backgroundColor: '#F6EFE6',
+    padding: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  celebrationFlagInnerCard: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#D8CDC0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  celebrationFlagImage: {
+    width: '100%',
+    height: '100%',
   },
 });

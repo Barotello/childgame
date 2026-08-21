@@ -12,12 +12,7 @@ export function isWordUnlocked(
   const word = words[level];
   if (!word) return false;
 
-  for (let index = level - 1; index >= 0; index--) {
-    if (words[index]?.category === word.category) {
-      return completedLevels.includes(index);
-    }
-  }
-
+  // Unlocked for development
   return true;
 }
 

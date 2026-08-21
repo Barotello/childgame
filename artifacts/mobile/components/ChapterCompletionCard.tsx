@@ -14,8 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { WordItem } from '@/constants/words';
 import { useI18n } from '@/lib/i18n';
-import { playCelebrateSound } from '@/lib/sounds';
-import { speakWord } from '@/lib/speech';
+import { playChapterCompletedSound } from '@/lib/sounds';
 import WordVisual from './WordVisual';
 
 type ChapterCompletionCardProps = {
@@ -45,7 +44,8 @@ export default function ChapterCompletionCard({
   const titleText = isCategoryComplete ? t('congrats') : t('chapterCompleteTitle');
 
   useEffect(() => {
-    playCelebrateSound();
+    // Play custom studio recorded Chapter Completed voiceover
+    playChapterCompletedSound();
 
     // Stars pop in
     starScale1.value = withDelay(150, withSpring(1, { damping: 6, stiffness: 120 }));
@@ -71,14 +71,7 @@ export default function ChapterCompletionCard({
       -1,
       true,
     );
-
-    // Speak cheerful short title
-    const timer = setTimeout(() => {
-      speakWord(titleText, locale);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [titleText, locale]);
+  }, []);
 
   const star1Style = useAnimatedStyle(() => ({
     transform: [{ scale: starScale1.value }],

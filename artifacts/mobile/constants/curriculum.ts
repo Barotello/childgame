@@ -196,7 +196,7 @@ export function buildCategoryChapters(
       entries: chapterEntries,
       completedCount,
       complete: completedCount === chapterEntries.length,
-      unlocked: !previous || previous.complete,
+      unlocked: true,
     });
   }
   return chapters;

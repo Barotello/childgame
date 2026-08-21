@@ -148,7 +148,18 @@ export default function CategoryChaptersScreen() {
                 {chapter.entries.map(({ word, globalIndex }) => {
                   const learned = completedLevels.includes(globalIndex);
                   return (
-                    <View key={word.id} style={styles.wordPreview}>
+                    <Pressable
+                      key={word.id}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        if (playWordAt(globalIndex, category.id)) {
+                          router.push('/game');
+                        }
+                      }}
+                      style={styles.wordPreview}
+                      accessibilityRole="button"
+                      accessibilityLabel={word.spellings[locale]}
+                    >
                       <View style={styles.visualContainer}>
                         <WordVisual word={word} style={styles.wordVisual} emojiSize={36} />
                         {learned ? (
@@ -160,7 +171,7 @@ export default function CategoryChaptersScreen() {
                       <Text style={styles.wordName} numberOfLines={1}>
                         {word.spellings[locale]}
                       </Text>
-                    </View>
+                    </Pressable>
                   );
                 })}
               </View>

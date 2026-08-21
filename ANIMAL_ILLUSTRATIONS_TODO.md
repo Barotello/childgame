@@ -63,17 +63,18 @@ Tüm dosya isimleri `assets/images` klasöründe standart İngilizce isimlendirm
 
 ---
 
-## 3. 🫀 Vücudumuz (10 Adet - Sırada)
-- [ ] 👁️ **Göz (Eye)** (`eye.png`)
-- [ ] ✋ **El (Hand)** (`hand.png`)
-- [ ] 🦷 **Diş (Tooth)** (`tooth.png`)
-- [ ] 👂 **Kulak (Ear)** (`ear.png`)
-- [ ] 👃 **Burun (Nose)** (`nose.png`)
-- [ ] ❤️ **Kalp (Heart)** (`heart.png`)
-- [ ] 🧠 **Beyin (Brain)** (`brain.png`)
-- [ ] 🦶 **Ayak (Foot)** (`foot.png`)
-- [ ] 👅 **Dil (Tongue)** (`tongue.png`)
-- [ ] 🦱 **Saç (Hair)** (`hair.png`)
+## 3. 🫀 Vücudumuz (10 Adet - Eğitici/Gerçekçi 3D Model Tarzı)
+> **Tasarım İlkesi**: Burun (`nose.png`) görselindeki gibi temiz, eğitici ve nesnenin kendisini doğrudan tanıtan 3D model sticker tarzı. Organların/uzuvların üzerine sonradan eklenmiş çizgi film göz/kaş/ağız çizilmez. Kalp sevgililer günü kalbi değil çocuklara uygun anatomik organ kalptir.
+- [ ] 👁️ **Göz (Eye)** (`eye.png`) - Gerçekçi 3D mavi parlak göz
+- [ ] ✋ **El (Hand)** (`hand.png`) - 5 parmaklı sevimli 3D el
+- [ ] 🦷 **Diş (Tooth)** (`tooth.png`) - Yüzü/bacağı olmayan parlak beyaz 3D azı dişi
+- [ ] 👂 **Kulak (Ear)** (`ear.png`) - Yüzü olmayan temiz 3D insan kulağı
+- [x] 👃 **Burun (Nose)** (`nose.png`) - Temiz 3D düğme burun (Referans Tasarım ✅)
+- [ ] 🫀 **Kalp (Heart)** (`heart.png`) - Çocuklara uygun 3D anatomik kalp organı (aort ve damarları belirgin)
+- [ ] 🧠 **Beyin (Brain)** (`brain.png`) - Kıvrımları belirgin, net anlaşılır pembe 3D beyin modeli
+- [ ] 🦶 **Ayak (Foot)** (`foot.png`) - Yüzü olmayan sevimli 3D ayak / parmaklar
+- [ ] 👅 **Dil (Tongue)** (`tongue.png`) - Temiz 3D pembe dil
+- [ ] 🦱 **Saç (Hair)** (`hair.png`) - Dalgalı/kıvırcık 3D saç buklesi/modeli
 
 ---
 
@@ -126,9 +127,9 @@ Tüm dosya isimleri `assets/images` klasöründe standart İngilizce isimlendirm
 
 ---
 
-## 7. 🐾 Ekstra Hayvanlar (Genişletilmiş Paket - 11 Adet)
-- [ ] 🦌 Deer (`deer.png`)
-- [ ] 🐐 Goat (`goat.png`)
+## 7. 🐾 Ekstra Hayvanlar (Genişletilmiş Paket - 2/11)
+- [x] 🦌 Deer (`deer.png`)
+- [x] 🐐 Goat (`goat.png`)
 - [ ] 🐑 Sheep (`sheep.png`)
 - [ ] 🐫 Camel (`camel.png`)
 - [ ] 🫏 Donkey (`donkey.png`)

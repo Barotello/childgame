@@ -237,8 +237,30 @@ export default function LibraryScreen() {
                   >
                     {item.image ? (
                       <Image source={item.image} style={styles.wordImage} contentFit="contain" />
+                    ) : item.wordId?.startsWith('flag_') || selected.id === 'flags' ? (
+                      <View style={styles.flagWordWrap}>
+                        <View style={styles.flagWordInner}>
+                          <Image
+                            source={{
+                              uri: `https://flagcdn.com/w320/${(item.wordId || item.id).replace('flag_', '').toLowerCase()}.png`,
+                            }}
+                            style={styles.flagWordImg}
+                            contentFit="contain"
+                          />
+                        </View>
+                      </View>
                     ) : item.swatch ? (
-                      <View style={[styles.swatch, { backgroundColor: item.swatch }]} />
+                      <View
+                        style={[
+                          styles.swatch,
+                          {
+                            backgroundColor: item.swatch,
+                            borderColor: item.swatch === '#FFFFFF' ? '#D8CFE6' : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        <View style={styles.swatchShine} />
+                      </View>
                     ) : (
                       <Text style={styles.wordEmoji}>{item.emoji || '⭐'}</Text>
                     )}
@@ -314,6 +336,14 @@ export default function LibraryScreen() {
                       <View style={styles.practiceVisual}>
                         {word.image ? (
                           <Image source={word.image} style={styles.practiceImg} contentFit="contain" />
+                        ) : word.category === 'flags' || word.id.startsWith('flag_') ? (
+                          <Image
+                            source={{
+                              uri: `https://flagcdn.com/w320/${word.id.replace('flag_', '').toLowerCase()}.png`,
+                            }}
+                            style={styles.practiceFlagImg}
+                            contentFit="cover"
+                          />
                         ) : (
                           <Text style={styles.practiceEmoji}>{word.emoji || '⭐'}</Text>
                         )}
@@ -743,15 +773,29 @@ const styles = StyleSheet.create({
   },
   wordEmoji: { fontSize: 58 },
   swatch: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 4,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 4.5,
     borderColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swatchShine: {
+    position: 'absolute',
+    top: 6,
+    left: 10,
+    width: 24,
+    height: 14,
+    borderRadius: 99,
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    transform: [{ rotate: '-25deg' }],
   },
   statusBadge: {
     position: 'absolute',
@@ -777,5 +821,41 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     textTransform: 'capitalize',
     marginTop: 8,
+  },
+  flagWordWrap: {
+    width: '88%',
+    height: '80%',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E2D9CD',
+    backgroundColor: '#F6EFE6',
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flagWordInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#D8CDC0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flagWordImg: {
+    width: '100%',
+    height: '100%',
+  },
+  practiceFlagImg: {
+    width: '90%',
+    height: '90%',
+    borderRadius: 8,
   },
 });

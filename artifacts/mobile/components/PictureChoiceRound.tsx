@@ -136,9 +136,8 @@ export default function PictureChoiceRound({ word, mode, onComplete }: PictureCh
       heroScale.value = withSpring(1, { damping: 14, stiffness: 70 });
       mascotScale.value = withSequence(withSpring(1.2), withSpring(1));
 
-      await speakWordAndWait(wordLabel, locale);
-      // Balanced 2.4s hold time after speech
-      finishTimer.current = setTimeout(onComplete, 2400);
+      // 1.9s celebration hold time
+      finishTimer.current = setTimeout(onComplete, 1900);
       return;
     }
 
@@ -344,18 +343,19 @@ const styles = StyleSheet.create({
     zIndex: 99,
     width: '100%',
     height: '100%',
-    backgroundColor: '#E8FAF2',
+    backgroundColor: '#FFFDF5',
     borderWidth: 3.5,
     borderBottomWidth: 8,
-    borderColor: '#06D6A0',
+    borderColor: '#FFD166',
+    borderBottomColor: '#F59F00',
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'space-evenly',
     padding: 16,
-    shadowColor: '#06D6A0',
+    shadowColor: '#FF9F1C',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     elevation: 8,
   },
   heroCheckBadge: {
@@ -384,20 +384,22 @@ const styles = StyleSheet.create({
   },
   heroLabelRow: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: '#06D6A0',
+    paddingHorizontal: 26,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2.5,
+    borderColor: '#FFE082',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
   heroWordLabel: {
-    color: '#0B6E4F',
-    fontSize: 26,
+    color: '#2B1E16',
+    fontSize: 28,
     fontWeight: '900',
     textTransform: 'capitalize',
+    letterSpacing: 0.5,
   },
 });

@@ -104,6 +104,7 @@ const categories: Category[] = [
     items: words.filter((w) => w.category === 'body').map((w) => ({
       id: w.id,
       wordId: w.id,
+      image: w.image,
       emoji: w.emoji,
       names: w.spellings,
     })),
