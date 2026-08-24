@@ -63,18 +63,18 @@ Tüm dosya isimleri `assets/images` klasöründe standart İngilizce isimlendirm
 
 ---
 
-## 3. 🫀 Vücudumuz (10 Adet - Eğitici/Gerçekçi 3D Model Tarzı)
+## 3. 🫀 Vücudumuz (10 Adet - Eğitici/Gerçekçi 3D Model Tarzı - 10/10 ✅ %100 Tamamlandı)
 > **Tasarım İlkesi**: Burun (`nose.png`) görselindeki gibi temiz, eğitici ve nesnenin kendisini doğrudan tanıtan 3D model sticker tarzı. Organların/uzuvların üzerine sonradan eklenmiş çizgi film göz/kaş/ağız çizilmez. Kalp sevgililer günü kalbi değil çocuklara uygun anatomik organ kalptir.
-- [ ] 👁️ **Göz (Eye)** (`eye.png`) - Gerçekçi 3D mavi parlak göz
-- [ ] ✋ **El (Hand)** (`hand.png`) - 5 parmaklı sevimli 3D el
-- [ ] 🦷 **Diş (Tooth)** (`tooth.png`) - Yüzü/bacağı olmayan parlak beyaz 3D azı dişi
-- [ ] 👂 **Kulak (Ear)** (`ear.png`) - Yüzü olmayan temiz 3D insan kulağı
-- [x] 👃 **Burun (Nose)** (`nose.png`) - Temiz 3D düğme burun (Referans Tasarım ✅)
-- [ ] 🫀 **Kalp (Heart)** (`heart.png`) - Çocuklara uygun 3D anatomik kalp organı (aort ve damarları belirgin)
-- [ ] 🧠 **Beyin (Brain)** (`brain.png`) - Kıvrımları belirgin, net anlaşılır pembe 3D beyin modeli
-- [ ] 🦶 **Ayak (Foot)** (`foot.png`) - Yüzü olmayan sevimli 3D ayak / parmaklar
-- [ ] 👅 **Dil (Tongue)** (`tongue.png`) - Temiz 3D pembe dil
-- [ ] 🦱 **Saç (Hair)** (`hair.png`) - Dalgalı/kıvırcık 3D saç buklesi/modeli
+- [x] 👁️ **Göz (Eye)** (`eye.png`)
+- [x] ✋ **El (Hand)** (`hand.png`)
+- [x] 🦷 **Diş (Tooth)** (`tooth.png`)
+- [x] 👂 **Kulak (Ear)** (`ear.png`)
+- [x] 👃 **Burun (Nose)** (`nose.png`)
+- [x] 🫀 **Kalp (Heart)** (`heart.png`)
+- [x] 🧠 **Beyin (Brain)** (`brain.png`)
+- [x] 🦶 **Ayak (Foot)** (`foot.png`)
+- [x] 👅 **Dil (Tongue)** (`tongue.png`)
+- [x] 🦱 **Saç (Hair)** (`hair.png`)
 
 ---
 
@@ -127,15 +127,15 @@ Tüm dosya isimleri `assets/images` klasöründe standart İngilizce isimlendirm
 
 ---
 
-## 7. 🐾 Ekstra Hayvanlar (Genişletilmiş Paket - 2/11)
+## 7. 🐾 Ekstra Hayvanlar (Genişletilmiş Paket - 8/11)
 - [x] 🦌 Deer (`deer.png`)
 - [x] 🐐 Goat (`goat.png`)
-- [ ] 🐑 Sheep (`sheep.png`)
-- [ ] 🐫 Camel (`camel.png`)
-- [ ] 🫏 Donkey (`donkey.png`)
-- [ ] 🦓 Zebra (`zebra.png`)
-- [ ] 🐍 Snake (`snake.png`)
-- [ ] 🐸 Frog (`frog.png`)
+- [x] 🐑 Sheep (`sheep.png`)
+- [x] 🐫 Camel (`camel.png`)
+- [x] 🫏 Donkey (`donkey.png`)
+- [x] 🦓 Zebra (`zebra.png`)
+- [x] 🐍 Snake (`snake.png`)
+- [x] 🐸 Frog (`frog.png`)
 - [ ] 🦭 Seal (`seal.png`)
 - [ ] 🪿 Goose (`goose.png`)
 - [ ] 🦀 Crab (`crab.png`)

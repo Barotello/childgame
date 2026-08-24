@@ -41,6 +41,8 @@ export const ANIMAL_AUDIO_REGISTRY: Record<string, any> = {
   snake: require('../assets/sounds/animals/snake.wav'),
   frog: require('../assets/sounds/animals/frog.wav'),
   seal: require('../assets/sounds/animals/seal.wav'),
+  goose: require('../assets/sounds/animals/goose.wav'),
+  crab: require('../assets/sounds/animals/crab.wav'),
   // --- Colors ---
   red: require('../assets/sounds/colors/red.wav'),
   blue: require('../assets/sounds/colors/blue.wav'),
