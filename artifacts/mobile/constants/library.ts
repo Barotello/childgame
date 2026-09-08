@@ -12,7 +12,7 @@
 import type { Locale } from './translations';
 import words from './words';
 
-export type CategoryId = 'animals' | 'fruits' | 'numbers' | 'colors' | 'flags' | 'body';
+export type CategoryId = 'animals' | 'fruits' | 'numbers' | 'colors' | 'flags' | 'body' | 'sports';
 
 export type LibraryItem = {
   id: string;
@@ -29,7 +29,14 @@ export type Category = {
   id: CategoryId;
   emoji: string;
   image?: any;
-  titleKey: 'categoryAnimals' | 'categoryFruits' | 'categoryNumbers' | 'categoryColors' | 'categoryFlags' | 'categoryBody';
+  titleKey:
+    | 'categoryAnimals'
+    | 'categoryFruits'
+    | 'categoryNumbers'
+    | 'categoryColors'
+    | 'categoryFlags'
+    | 'categoryBody'
+    | 'categorySports';
   items: LibraryItem[];
 };
 
@@ -99,8 +106,21 @@ const categories: Category[] = [
   {
     id: 'body',
     emoji: '🖐️',
+    image: require('../assets/images/body-el.jpg'),
     titleKey: 'categoryBody',
     items: words.filter((w) => w.category === 'body').map((w) => ({
+      id: w.id,
+      wordId: w.id,
+      image: w.image,
+      emoji: w.emoji,
+      names: w.spellings,
+    })),
+  },
+  {
+    id: 'sports',
+    emoji: '⚽',
+    titleKey: 'categorySports',
+    items: words.filter((w) => w.category === 'sports').map((w) => ({
       id: w.id,
       wordId: w.id,
       emoji: w.emoji,

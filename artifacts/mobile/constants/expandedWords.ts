@@ -259,30 +259,181 @@ const EXISTING_FLAG_IDS = new Set([
   'flag_eg', 'flag_np', 'flag_pe', 'flag_pl', 'flag_cn', 'flag_cl',
 ]);
 
-/**
- * Curated starter expansion for ages 4–7.
- *
- * The larger source lists stay above as an editorial backlog, but are not
- * shipped in the learning path until their translations, artwork and reading
- * difficulty have been reviewed. Quantity must not outrank recognisability.
- */
+const SHIPPED_ANIMALS: WordItem[] = [
+  {
+    id: 'anim_crab',
+    category: 'animals',
+    spellings: { tr: 'yengeç', en: 'crab', fr: 'crabe', es: 'cangrejo', it: 'granchio', de: 'krabbe' },
+    emoji: '🦀',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_deer',
+    category: 'animals',
+    spellings: { tr: 'geyik', en: 'deer', fr: 'cerf', es: 'ciervo', it: 'cervo', de: 'hirsch' },
+    emoji: '🦌',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_goat',
+    category: 'animals',
+    spellings: { tr: 'keçi', en: 'goat', fr: 'chèvre', es: 'cabra', it: 'capra', de: 'ziege' },
+    emoji: '🐐',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_sheep',
+    category: 'animals',
+    spellings: { tr: 'koyun', en: 'sheep', fr: 'mouton', es: 'oveja', it: 'pecora', de: 'schaf' },
+    emoji: '🐑',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_camel',
+    category: 'animals',
+    spellings: { tr: 'deve', en: 'camel', fr: 'chameau', es: 'camello', it: 'cammello', de: 'kamel' },
+    emoji: '🐫',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_donkey',
+    category: 'animals',
+    spellings: { tr: 'eşek', en: 'donkey', fr: 'âne', es: 'burro', it: 'asino', de: 'esel' },
+    emoji: '🫏',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_zebra',
+    category: 'animals',
+    spellings: { tr: 'zebra', en: 'zebra', fr: 'zèbre', es: 'cebra', it: 'zebra', de: 'zebra' },
+    emoji: '🦓',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_snake',
+    category: 'animals',
+    spellings: { tr: 'yılan', en: 'snake', fr: 'serpent', es: 'serpiente', it: 'serpente', de: 'schlange' },
+    emoji: '🐍',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_frog',
+    category: 'animals',
+    spellings: { tr: 'kurbağa', en: 'frog', fr: 'grenouille', es: 'rana', it: 'rana', de: 'frosch' },
+    emoji: '🐸',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_seal',
+    category: 'animals',
+    spellings: { tr: 'fok', en: 'seal', fr: 'phoque', es: 'foca', it: 'foca', de: 'robbe' },
+    emoji: '🦭',
+    pictureReady: true,
+  },
+  {
+    id: 'anim_goose',
+    category: 'animals',
+    spellings: { tr: 'kaz', en: 'goose', fr: 'oie', es: 'ganso', it: 'oca', de: 'gans' },
+    emoji: '🪿',
+    pictureReady: true,
+  },
+];
+
+const SHIPPED_FRUITS: WordItem[] = [
+  {
+    id: 'fruit_apricot',
+    category: 'fruits',
+    spellings: { tr: 'kayısı', en: 'apricot', fr: 'abricot', es: 'damasco', it: 'albicocca', de: 'aprikose' },
+    emoji: '🍑',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_pear',
+    category: 'fruits',
+    spellings: { tr: 'armut', en: 'pear', fr: 'poire', es: 'pera', it: 'pera', de: 'birne' },
+    emoji: '🍐',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_peach',
+    category: 'fruits',
+    spellings: { tr: 'şeftali', en: 'peach', fr: 'pêche', es: 'durazno', it: 'pesca', de: 'pfirsich' },
+    emoji: '🍑',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_cherry',
+    category: 'fruits',
+    spellings: { tr: 'kiraz', en: 'cherry', fr: 'cerise', es: 'cereza', it: 'ciliegia', de: 'kirsche' },
+    emoji: '🍒',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_pineapple',
+    category: 'fruits',
+    spellings: { tr: 'ananas', en: 'pineapple', fr: 'ananas', es: 'piña', it: 'ananas', de: 'ananas' },
+    emoji: '🍍',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_fig',
+    category: 'fruits',
+    spellings: { tr: 'incir', en: 'fig', fr: 'figue', es: 'higo', it: 'fico', de: 'feige' },
+    emoji: '🫐',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_plum',
+    category: 'fruits',
+    spellings: { tr: 'erik', en: 'plum', fr: 'prune', es: 'ciruela', it: 'prugna', de: 'pflaume' },
+    emoji: '🫐',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_avocado',
+    category: 'fruits',
+    spellings: { tr: 'avokado', en: 'avocado', fr: 'avocat', es: 'aguacate', it: 'avocado', de: 'avocado' },
+    emoji: '🥑',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_papaya',
+    category: 'fruits',
+    spellings: { tr: 'papaya', en: 'papaya', fr: 'papaye', es: 'papaya', it: 'papaya', de: 'papaya' },
+    emoji: '🥭',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_guava',
+    category: 'fruits',
+    spellings: { tr: 'guava', en: 'guava', fr: 'goyave', es: 'guayaba', it: 'guava', de: 'guave' },
+    emoji: '🍈',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_date',
+    category: 'fruits',
+    spellings: { tr: 'hurma', en: 'date', fr: 'datte', es: 'dátil', it: 'dattero', de: 'dattel' },
+    emoji: '🌴',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_quince',
+    category: 'fruits',
+    spellings: { tr: 'ayva', en: 'quince', fr: 'coing', es: 'membrillo', it: 'cotogna', de: 'quitte' },
+    emoji: '🍏',
+    pictureReady: false,
+  },
+  {
+    id: 'fruit_mulberry',
+    category: 'fruits',
+    spellings: { tr: 'dut', en: 'mulberry', fr: 'mûre', es: 'mora', it: 'gelso', de: 'maulbeere' },
+    emoji: '🫐',
+    pictureReady: false,
+  },
+];
+
 export const expandedWords: WordItem[] = [
-  ...simpleWords(
-    'animals',
-    ANIMALS.filter(([id]) => [
-      'anim_crab', 'anim_deer', 'anim_goat', 'anim_sheep', 'anim_camel',
-      'anim_donkey', 'anim_zebra', 'anim_snake', 'anim_frog', 'anim_seal',
-      'anim_goose',
-    ].includes(id)),
-  ),
-  ...simpleWords(
-    'fruits',
-    FRUITS.filter(([id]) => [
-      'fruit_apricot', 'fruit_pear', 'fruit_peach', 'fruit_cherry',
-      'fruit_pineapple', 'fruit_fig', 'fruit_plum', 'fruit_avocado',
-      'fruit_papaya', 'fruit_guava', 'fruit_date', 'fruit_quince',
-      'fruit_mulberry',
-    ].includes(id)),
-    false,
-  ),
+  ...SHIPPED_ANIMALS,
+  ...SHIPPED_FRUITS,
 ];

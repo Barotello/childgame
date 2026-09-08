@@ -16,9 +16,9 @@ const animalWords = ['cat', 'dog', 'bird', 'fish', 'bear'].map((id) => ({
 
 test('learning activities repeat in a child-friendly sequence', () => {
   assert.equal(learningActivityForPosition(0), 'picture');
-  assert.equal(learningActivityForPosition(1), 'listen');
-  assert.equal(learningActivityForPosition(2), 'picture');
-  assert.equal(learningActivityForPosition(3), 'listen');
+  assert.equal(learningActivityForPosition(1), 'spell');
+  assert.equal(learningActivityForPosition(2), 'listen');
+  assert.equal(learningActivityForPosition(3), 'spell');
 });
 
 test('chapter progress groups vocabulary into sets of five', () => {

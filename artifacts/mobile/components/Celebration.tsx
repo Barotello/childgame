@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import Animated, {
   Easing,
@@ -15,7 +16,7 @@ import { translations } from '@/constants/translations';
 import { useI18n } from '@/lib/i18n';
 import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
-import { speakTextAndWait } from '@/lib/speech';
+import { speakTextAndWait, stopSpeech } from '@/lib/speech';
 const PARTICLE_COLORS = ['#FF6F59', '#3AB0FF', '#FFC93C', '#B57BFF', '#38C6B0', '#FF8FB1'];
 const PARTICLE_COUNT = 22;
 
@@ -70,14 +71,24 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
     colors: 'factColors',
     flags: 'factFlags',
     body: 'factBody',
+    sports: 'factSports',
   }[word.category] as
     | 'factAnimals'
     | 'factFruits'
     | 'factNumbers'
     | 'factColors'
     | 'factFlags'
-    | 'factBody';
+    | 'factBody'
+    | 'factSports';
   const fact = t(factKey, { word: word.spellings[locale] });
+
+  const proceedingRef = React.useRef(false);
+  const handleProceed = () => {
+    if (proceedingRef.current) return;
+    proceedingRef.current = true;
+    stopSpeech();
+    onNarrationComplete?.();
+  };
 
   useEffect(() => {
     scale.value = withSpring(1, { damping: 12, stiffness: 100 });
@@ -88,22 +99,22 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
     let active = true;
     const timer = setTimeout(() => {
       speakTextAndWait(fact, locale).then(() => {
-        if (active) onNarrationComplete?.();
+        if (active && !proceedingRef.current) handleProceed();
       });
     }, 450);
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [fact, locale, onNarrationComplete]);
+  }, [fact, locale]);
 
   const cardStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   return (
-    <View style={styles.overlay} pointerEvents="none">
-      <View style={styles.particleField}>
+    <View style={styles.overlay}>
+      <View style={styles.particleField} pointerEvents="none">
         {particles.map((particle, index) => (
           <ConfettiParticle key={index} particle={particle} />
         ))}
@@ -117,9 +128,9 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
         ) : word.swatch ? (
           <View
             style={{
-              width: 140,
-              height: 140,
-              borderRadius: 70,
+              width: 130,
+              height: 130,
+              borderRadius: 65,
               backgroundColor: word.swatch,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
@@ -129,7 +140,7 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
             }}
           />
         ) : (
-          <Text style={{ fontSize: 90, textAlign: 'center', lineHeight: 140 }}>{word.emoji}</Text>
+          <Text style={{ fontSize: 80, textAlign: 'center', lineHeight: 110 }}>{word.emoji}</Text>
         )}
         <Text style={styles.word}>{wordLabel}</Text>
         <Text style={styles.praise}>{praise}</Text>
@@ -143,6 +154,27 @@ export default function Celebration({ word, coinsEarned, onNarrationComplete }: 
             <Text style={styles.coins}>{t('coinEarned', { n: coinsEarned })}</Text>
           </View>
         ) : null}
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.continueBtn,
+            pressed && { transform: [{ scale: 0.96 }] },
+          ]}
+          onPress={handleProceed}
+          accessibilityRole="button"
+          accessibilityLabel={t('continueButton')}
+        >
+          <LinearGradient
+            colors={['#06D6A0', '#00BFA5', '#048A64']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.continueGradient}
+          >
+            <View style={styles.jellyHighlight} />
+            <Text style={styles.continueText}>{t('continueButton')}</Text>
+            <Feather name="arrow-right" size={20} color="#FFFFFF" />
+          </LinearGradient>
+        </Pressable>
       </Animated.View>
     </View>
   );
@@ -255,5 +287,42 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.24,
     shadowRadius: 8,
     elevation: 8,
+  },
+  continueBtn: {
+    width: '100%',
+    borderRadius: 24,
+    marginTop: 8,
+    overflow: 'hidden',
+    shadowColor: '#048A64',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  continueGradient: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 2,
+    borderColor: '#56E8B8',
+    borderRadius: 24,
+  },
+  continueText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  jellyHighlight: {
+    position: 'absolute',
+    top: 2,
+    left: 8,
+    right: 8,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
   },
 });

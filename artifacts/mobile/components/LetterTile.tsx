@@ -21,10 +21,11 @@ type LetterTileProps = {
   letter: string;
   color: string;
   locked: boolean;
+  tileKey?: string;
   size?: number;
-  onAttemptDrop: (letter: string, centerX: number, centerY: number) => DropResult;
+  onAttemptDrop: (letter: string, centerX: number, centerY: number, tileKey?: string) => DropResult;
   /** Tap places letter into the next matching empty slot (no drag required). */
-  onTapPlace?: (letter: string) => boolean;
+  onTapPlace?: (letter: string, tileKey?: string) => boolean;
   onFeedback?: (result: 'correct' | 'wrong') => void;
 };
 
@@ -32,6 +33,7 @@ export default function LetterTile({
   letter,
   color,
   locked,
+  tileKey,
   size = DEFAULT_TILE_SIZE,
   onAttemptDrop,
   onTapPlace,
@@ -80,7 +82,7 @@ export default function LetterTile({
   };
 
   const finishDrop = (absoluteX: number, absoluteY: number) => {
-    const result = onAttemptDrop(letter, absoluteX, absoluteY);
+    const result = onAttemptDrop(letter, absoluteX, absoluteY, tileKey);
 
     if (result.correct) {
       applyCorrect(result.dx, result.dy);
@@ -96,7 +98,7 @@ export default function LetterTile({
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    const ok = onTapPlace(letter);
+    const ok = onTapPlace(letter, tileKey);
     if (ok) {
       scale.value = withSequence(withTiming(1.25, { duration: 100 }), withSpring(1, { damping: 8 }));
       playCorrectSound();

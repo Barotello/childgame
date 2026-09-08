@@ -598,61 +598,136 @@ const baseWords: WordItem[] = [
     id: 'body_goz',
     spellings: { tr: 'göz', en: 'eye', fr: 'œil', es: 'ojo', it: 'occhio', de: 'auge' },
     category: 'body',
+    image: require('../assets/images/body-goz.jpg'),
     emoji: '👁️',
   },
   {
     id: 'body_el',
     spellings: { tr: 'el', en: 'hand', fr: 'main', es: 'mano', it: 'mano', de: 'hand' },
     category: 'body',
+    image: require('../assets/images/body-el.jpg'),
     emoji: '✋',
   },
   {
     id: 'body_dis',
     spellings: { tr: 'diş', en: 'tooth', fr: 'dent', es: 'diente', it: 'dente', de: 'zahn' },
     category: 'body',
+    image: require('../assets/images/body-dis.jpg'),
     emoji: '🦷',
   },
   {
     id: 'body_kulak',
     spellings: { tr: 'kulak', en: 'ear', fr: 'oreille', es: 'oreja', it: 'orecchio', de: 'ohr' },
     category: 'body',
+    image: require('../assets/images/body-kulak.jpg'),
     emoji: '👂',
   },
   {
     id: 'body_burun',
     spellings: { tr: 'burun', en: 'nose', fr: 'nez', es: 'nariz', it: 'naso', de: 'nase' },
     category: 'body',
+    image: require('../assets/images/body-burun.jpg'),
     emoji: '👃',
   },
   {
     id: 'body_kalp',
     spellings: { tr: 'kalp', en: 'heart', fr: 'cœur', es: 'corazón', it: 'cuore', de: 'herz' },
     category: 'body',
+    image: require('../assets/images/body-kalp.jpg'),
     emoji: '❤️',
   },
   {
     id: 'body_beyin',
     spellings: { tr: 'beyin', en: 'brain', fr: 'cerveau', es: 'cerebro', it: 'cervello', de: 'gehirn' },
     category: 'body',
+    image: require('../assets/images/body-beyin.jpg'),
     emoji: '🧠',
   },
   {
     id: 'body_ayak',
     spellings: { tr: 'ayak', en: 'foot', fr: 'pied', es: 'pie', it: 'piede', de: 'fuß' },
     category: 'body',
+    image: require('../assets/images/body-ayak.jpg'),
     emoji: '🦶',
   },
   {
     id: 'body_dil',
     spellings: { tr: 'dil', en: 'tongue', fr: 'langue', es: 'lengua', it: 'lingua', de: 'zunge' },
     category: 'body',
+    image: require('../assets/images/body-dil.jpg'),
     emoji: '👅',
   },
   {
     id: 'body_sac',
     spellings: { tr: 'saç', en: 'hair', fr: 'cheveux', es: 'pelo', it: 'capelli', de: 'haar' },
     category: 'body',
+    image: require('../assets/images/body-sac.jpg'),
     emoji: '🦱',
+  },
+
+  // --- Sports / Sporlar ---
+  // Chapter 1: Ball Sports (Top Sporları)
+  {
+    id: 'sport_football',
+    spellings: { tr: 'futbol', en: 'soccer', fr: 'football', es: 'fútbol', it: 'calcio', de: 'fussball' },
+    category: 'sports',
+    emoji: '⚽',
+  },
+  {
+    id: 'sport_basket',
+    spellings: { tr: 'basket', en: 'basket', fr: 'basket', es: 'basket', it: 'basket', de: 'basket' },
+    category: 'sports',
+    emoji: '🏀',
+  },
+  {
+    id: 'sport_tennis',
+    spellings: { tr: 'tenis', en: 'tennis', fr: 'tennis', es: 'tenis', it: 'tennis', de: 'tennis' },
+    category: 'sports',
+    emoji: '🎾',
+  },
+  {
+    id: 'sport_golf',
+    spellings: { tr: 'golf', en: 'golf', fr: 'golf', es: 'golf', it: 'golf', de: 'golf' },
+    category: 'sports',
+    emoji: '⛳',
+  },
+  {
+    id: 'sport_bowling',
+    spellings: { tr: 'bovling', en: 'bowling', fr: 'bowling', es: 'bolos', it: 'bowling', de: 'bowling' },
+    category: 'sports',
+    emoji: '🎳',
+  },
+
+  // Chapter 2: Action & Adventure (Hareket & Macera)
+  {
+    id: 'sport_judo',
+    spellings: { tr: 'judo', en: 'judo', fr: 'judo', es: 'judo', it: 'judo', de: 'judo' },
+    category: 'sports',
+    emoji: '🥋',
+  },
+  {
+    id: 'sport_box',
+    spellings: { tr: 'boks', en: 'boxing', fr: 'boxe', es: 'boxeo', it: 'boxe', de: 'boxen' },
+    category: 'sports',
+    emoji: '🥊',
+  },
+  {
+    id: 'sport_ski',
+    spellings: { tr: 'kayak', en: 'ski', fr: 'ski', es: 'esquí', it: 'sci', de: 'ski' },
+    category: 'sports',
+    emoji: '⛷️',
+  },
+  {
+    id: 'sport_run',
+    spellings: { tr: 'koşu', en: 'run', fr: 'course', es: 'correr', it: 'corsa', de: 'lauf' },
+    category: 'sports',
+    emoji: '🏃',
+  },
+  {
+    id: 'sport_bike',
+    spellings: { tr: 'bisiklet', en: 'bike', fr: 'vélo', es: 'bici', it: 'bici', de: 'rad' },
+    category: 'sports',
+    emoji: '🚴',
   },
 ];
 

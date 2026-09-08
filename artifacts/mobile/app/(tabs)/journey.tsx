@@ -20,6 +20,7 @@ const CATEGORY_COLORS: Record<CategoryId, { main: string; pale: string; border: 
   colors: { main: '#F05E7D', pale: '#FFF0F4', border: '#C63B5B', glow: '#FDE0E7' },
   flags: { main: '#9B7AE0', pale: '#F6F2FD', border: '#7252B4', glow: '#E8DEF8' },
   body: { main: '#F27DB1', pale: '#FFF2F8', border: '#C94F86', glow: '#FCDAEB' },
+  sports: { main: '#FF5722', pale: '#FFF3E0', border: '#E64A19', glow: '#FFE0B2' },
 };
 
 function CategoryBadgeVisual({ category }: { category: Category }) {
@@ -27,6 +28,9 @@ function CategoryBadgeVisual({ category }: { category: Category }) {
     return <Image source={category.image} style={styles.illustrationImg} contentFit="contain" />;
   }
   if (category.id === 'fruits' && category.image) {
+    return <Image source={category.image} style={styles.illustrationImg} contentFit="contain" />;
+  }
+  if (category.id === 'body' && category.image) {
     return <Image source={category.image} style={styles.illustrationImg} contentFit="contain" />;
   }
   if (category.id === 'numbers') {
@@ -74,6 +78,16 @@ function CategoryBadgeVisual({ category }: { category: Category }) {
         <Text style={styles.handEmoji}>🖐️</Text>
         <View style={styles.heartMiniWrap}>
           <Text style={styles.heartMiniEmoji}>❤️</Text>
+        </View>
+      </View>
+    );
+  }
+  if (category.id === 'sports') {
+    return (
+      <View style={styles.sportsVisualWrap}>
+        <Text style={styles.sportsEmoji}>⚽</Text>
+        <View style={styles.trophyMiniWrap}>
+          <Text style={styles.trophyMiniEmoji}>🏆</Text>
         </View>
       </View>
     );
@@ -356,6 +370,21 @@ const styles = StyleSheet.create({
   },
   heartMiniEmoji: {
     fontSize: 14,
+  },
+  sportsVisualWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sportsEmoji: {
+    fontSize: 34,
+  },
+  trophyMiniWrap: {
+    position: 'absolute',
+    bottom: -3,
+    right: -5,
+  },
+  trophyMiniEmoji: {
+    fontSize: 15,
   },
   categoryEmoji: {
     fontSize: 40,

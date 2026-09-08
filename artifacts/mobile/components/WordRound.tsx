@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import LetterTile, { DropResult, MIN_TILE_SIZE } from './LetterTile';
+import MascotGuide from './MascotGuide';
 import type { WordItem } from '@/constants/words';
 import { type Locale } from '@/constants/translations';
 import { useColors } from '@/hooks/useColors';
@@ -135,14 +136,16 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
 
   const measureSlots = () => {
     letters.forEach((_, index) => {
-      const node = slotRefs.current[index] as unknown as {
-        measure?: (
-          callback: (x: number, y: number, width: number, height: number, pageX: number, pageY: number) => void,
-        ) => void;
-      };
-      node?.measure?.((_x, _y, width, height, pageX, pageY) => {
-        slotMeasurements.current[index] = { pageX, pageY, width, height };
-      });
+      const node = slotRefs.current[index] as any;
+      if (node?.measureInWindow) {
+        node.measureInWindow((x: number, y: number, width: number, height: number) => {
+          slotMeasurements.current[index] = { pageX: x, pageY: y, width, height };
+        });
+      } else if (node?.measure) {
+        node.measure((_x: number, _y: number, width: number, height: number, pageX: number, pageY: number) => {
+          slotMeasurements.current[index] = { pageX, pageY, width, height };
+        });
+      }
     });
   };
 
@@ -228,8 +231,8 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
     }
   };
 
-  const attemptDrop = (letter: string, centerX: number, centerY: number): DropResult => {
-    const HIT_PADDING = 22;
+  const attemptDrop = (letter: string, centerX: number, centerY: number, tileKey?: string): DropResult => {
+    const HIT_PADDING = 26;
 
     for (let index = 0; index < letters.length; index++) {
       if (filledRef.current[index]) continue;
@@ -244,7 +247,8 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
         return { correct: false, dx: 0, dy: 0 };
       }
 
-      applyLetterAtIndex(index, letter);
+      applyLetterAtIndex(index, letter, tileKey);
+      forceRender((n) => n + 1);
 
       const slotCenterX = box.pageX + box.width / 2;
       const slotCenterY = box.pageY + box.height / 2;
@@ -255,14 +259,14 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   };
 
   /** Tap: place letter into the first empty slot that needs this letter. */
-  const handleTapPlace = (letter: string): boolean => {
+  const handleTapPlace = (letter: string, tileKey?: string): boolean => {
     const emptyIndex = filledRef.current.findIndex((value, index) => value === null && letters[index] === letter);
     if (emptyIndex === -1) return false;
 
-    const matchingTile = tiles.find(
+    const chosenKey = tileKey || tiles.find(
       (tile) => tile.letter === letter && !usedTileKeys.current.has(tile.key),
-    );
-    applyLetterAtIndex(emptyIndex, letter, matchingTile?.key);
+    )?.key;
+    applyLetterAtIndex(emptyIndex, letter, chosenKey);
     forceRender((n) => n + 1);
     return true;
   };
@@ -292,20 +296,11 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
   return (
     <View style={styles.container}>
       <View style={[styles.screenCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={styles.guideRow}>
-          <View style={styles.guideIcon}>
-            <Feather name="headphones" size={20} color={gameTheme.colors.sky} />
-          </View>
-          <Text style={styles.guideText}>{t('listenAndFind')}</Text>
-          <Pressable
-            style={styles.hearButton}
+        <View style={styles.mascotWrapper}>
+          <MascotGuide
+            message={`${t('minoSays')}: ${t('listenAndFind')}`}
             onPress={() => speakWord(wordLabel, locale)}
-            accessibilityLabel={t('hearWord')}
-            accessibilityRole="button"
-            hitSlop={6}
-          >
-            <Feather name="volume-2" size={23} color="#FFFFFF" />
-          </Pressable>
+          />
         </View>
 
         <View
@@ -318,17 +313,19 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
             {word.image ? (
               <View style={styles.imageContainer}>
                 <Image source={word.image} style={styles.image} contentFit="contain" />
-                <Animated.View
-                  style={[StyleSheet.absoluteFillObject, styles.silhouetteOverlay, silhouetteStyle]}
-                  pointerEvents="none"
-                >
-                  <Image
-                    source={word.image}
-                    style={styles.image}
-                    contentFit="contain"
-                    tintColor="#2D3142"
-                  />
-                </Animated.View>
+                {word.category === 'animals' ? (
+                  <Animated.View
+                    style={[StyleSheet.absoluteFillObject, styles.silhouetteOverlay, silhouetteStyle]}
+                    pointerEvents="none"
+                  >
+                    <Image
+                      source={word.image}
+                      style={styles.image}
+                      contentFit="contain"
+                      tintColor="#2D3142"
+                    />
+                  </Animated.View>
+                ) : null}
               </View>
             ) : word.swatch ? (
               <Animated.View
@@ -417,6 +414,7 @@ export default function WordRound({ word, onComplete, onSkip }: WordRoundProps) 
               <LetterTile
                 letter={tile.letter}
                 color={tile.color}
+                tileKey={tile.key}
                 locked={usedTileKeys.current.has(tile.key)}
                 size={dynamicTileSize}
                 onAttemptDrop={attemptDrop}
@@ -495,20 +493,9 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     gap: 9,
   },
-  guideIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: gameTheme.colors.skySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  guideText: {
-    flex: 1,
-    color: gameTheme.colors.ink,
-    fontSize: 15,
-    fontWeight: '800',
-    lineHeight: 19,
+  mascotWrapper: {
+    width: '100%',
+    paddingBottom: 8,
   },
   screenInner: {
     width: '100%',

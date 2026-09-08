@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '@/components/GameHeader';
 import WordVisual from '@/components/WordVisual';
@@ -21,13 +21,18 @@ const CATEGORY_COLORS: Record<CategoryId, { main: string; pale: string; border: 
   colors: { main: '#F05E7D', pale: '#FFF2F5', border: '#C63B5B' },
   flags: { main: '#9B7AE0', pale: '#F6F2FD', border: '#7252B4' },
   body: { main: '#F27DB1', pale: '#FFF2F8', border: '#C94F86' },
+  sports: { main: '#FF5722', pale: '#FFF3E0', border: '#E64A19' },
 };
 
 export default function CategoryChaptersScreen() {
   const insets = useSafeAreaInsets();
   const { t, locale } = useI18n();
+  const params = useLocalSearchParams<{ category?: CategoryId }>();
   const { selectedCategory, completedLevels, playWordAt } = useGameState();
-  const category = categories.find((item) => item.id === selectedCategory) ?? categories[0];
+  const activeCategoryId = (params.category && categories.some((c) => c.id === params.category))
+    ? params.category
+    : selectedCategory;
+  const category = categories.find((item) => item.id === activeCategoryId) ?? categories[0];
   const color = CATEGORY_COLORS[category.id];
   const chapters = buildCategoryChapters(words, completedLevels, category.id);
   const handleCardPress = (chapterIndex: number) => {
@@ -143,12 +148,21 @@ export default function CategoryChaptersScreen() {
                 </View>
               </View>
 
-              {/* Animal Preview Row */}
+              {/* Animal / Word Preview Row */}
               <View style={styles.wordPreviewRow}>
                 {chapter.entries.map(({ word, globalIndex }) => {
                   const learned = completedLevels.includes(globalIndex);
                   return (
-                    <View key={word.id} style={styles.wordPreview}>
+                    <Pressable
+                      key={word.id}
+                      style={styles.wordPreview}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        speakWord(word.spellings[locale], locale);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={word.spellings[locale]}
+                    >
                       <View style={styles.visualContainer}>
                         <WordVisual word={word} style={styles.wordVisual} emojiSize={36} />
                         {learned ? (
@@ -160,7 +174,7 @@ export default function CategoryChaptersScreen() {
                       <Text style={styles.wordName} numberOfLines={1}>
                         {word.spellings[locale]}
                       </Text>
-                    </View>
+                    </Pressable>
                   );
                 })}
               </View>

@@ -32,10 +32,11 @@ type TabBarProps = {
 const TAB_COLORS: Record<string, { bg: string; border: string }> = {
   journey: { bg: '#93D656', border: '#5DAE30' },
   library: { bg: '#56A8DF', border: '#327EBC' },
+  store: { bg: '#FFB703', border: '#D97706' },
   settings: { bg: '#9D4EDD', border: '#7826BA' },
 };
 
-const CHILD_TABS = new Set(['journey', 'library', 'settings']);
+const CHILD_TABS = new Set(['journey', 'library', 'store', 'settings']);
 
 function CustomTabBar({ state, descriptors, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
@@ -151,13 +152,19 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="store"
+        options={{
+          title: t('yourRewards'),
+          tabBarIcon: ({ color, size }) => <Feather name="award" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: t('parentArea'),
           tabBarIcon: ({ color, size }) => <Feather name="shield" size={size} color={color} />,
         }}
       />
-      <Tabs.Screen name="store" options={{ href: null }} />
       <Tabs.Screen name="game" options={{ href: null }} />
     </Tabs>
   );

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
@@ -11,6 +12,7 @@ import words from '@/constants/words';
 import { gameTheme } from '@/constants/gameTheme';
 import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
+import { speakWord } from '@/lib/speech';
 
 const CATEGORY_COLORS: Record<CategoryId, { bg: string; border: string }> = {
   fruits: { bg: '#8BCB55', border: '#5A9B2F' },
@@ -19,6 +21,7 @@ const CATEGORY_COLORS: Record<CategoryId, { bg: string; border: string }> = {
   colors: { bg: '#F05E7D', border: '#C63B5B' },
   flags: { bg: '#9B7AE0', border: '#7252B4' },
   body: { bg: '#F27DB1', border: '#C94F86' },
+  sports: { bg: '#FF5722', border: '#E64A19' },
 };
 
 export default function LibraryScreen() {
@@ -86,8 +89,11 @@ export default function LibraryScreen() {
               return (
                 <Pressable
                   key={item.id}
-                  onPress={() => item.wordId && !locked && openWord(item.wordId, selected.id)}
-                  disabled={locked}
+                  onPress={() => {
+                    speakWord(label, locale);
+                    if (item.wordId && !locked) openWord(item.wordId, selected.id);
+                  }}
+                  disabled={false}
                   style={({ pressed }) => [
                     styles.wordCard,
                     locked && styles.lockedCard,
@@ -95,11 +101,12 @@ export default function LibraryScreen() {
                   ]}
                   accessibilityRole="button"
                   accessibilityLabel={locked ? `${label}, ${t('locked')}` : label}
-                  accessibilityState={{ disabled: locked }}
                 >
                   <View style={[styles.wordVisual, { backgroundColor: `${CATEGORY_COLORS[selected.id].bg}1F` }]}>
                     {item.swatch ? (
                       <View style={[styles.swatch, { backgroundColor: item.swatch }]} />
+                    ) : item.image ? (
+                      <Image source={item.image} style={styles.wordImage} contentFit="contain" />
                     ) : (
                       <Text style={styles.wordEmoji}>{item.emoji || '⭐'}</Text>
                     )}
@@ -174,7 +181,10 @@ export default function LibraryScreen() {
               return (
                 <Pressable
                   key={category.id}
-                  onPress={() => setActiveCategory(category.id)}
+                  onPress={() => {
+                    speakWord(t(category.titleKey), locale);
+                    setActiveCategory(category.id);
+                  }}
                   style={({ pressed }) => [
                     styles.categoryCard,
                     { backgroundColor: color.bg, borderColor: color.border },
@@ -268,6 +278,7 @@ const styles = StyleSheet.create({
   lockedCard: { opacity: 0.58 },
   cardPressed: { transform: [{ scale: 0.97 }, { translateY: 2 }] },
   wordVisual: { width: '100%', height: 104, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  wordImage: { width: '84%', height: '84%', borderRadius: 14 },
   wordEmoji: { fontSize: 58 },
   swatch: { width: 66, height: 66, borderRadius: 33, borderWidth: 3, borderColor: '#FFFFFF' },
   statusBadge: { position: 'absolute', top: 7, right: 7, width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },

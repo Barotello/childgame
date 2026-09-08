@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import Feather from '@expo/vector-icons/Feather';
 import { gameTheme } from '@/constants/gameTheme';
@@ -7,11 +7,12 @@ import { gameTheme } from '@/constants/gameTheme';
 type MascotGuideProps = {
   message: string;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
-export default function MascotGuide({ message, onPress }: MascotGuideProps) {
+export default function MascotGuide({ message, onPress, style }: MascotGuideProps) {
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, style]}>
       <View style={styles.avatar}>
         <Image source={require('../assets/images/mino.png')} style={styles.image} contentFit="contain" />
       </View>

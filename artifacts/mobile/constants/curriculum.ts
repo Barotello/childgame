@@ -3,7 +3,7 @@ import type { TranslationKey } from './translations';
 
 export const WORDS_PER_CHAPTER = 5;
 
-export type LearningActivity = 'picture' | 'listen';
+export type LearningActivity = 'picture' | 'listen' | 'spell';
 
 export type ChapterTheme = {
   id: string;
@@ -135,6 +135,25 @@ export const FRUIT_CHAPTER_THEMES: readonly ChapterTheme[] = [
   },
 ];
 
+export const SPORTS_CHAPTER_THEMES: readonly ChapterTheme[] = [
+  {
+    id: 'sports_ball',
+    emoji: '⚽',
+    badge: '⚽ 🏀',
+    titleKey: 'chapterSportsBallTitle',
+    descKey: 'chapterSportsBallDesc',
+    colors: { main: '#FF5722', pale: '#FFF3E0', border: '#E64A19' },
+  },
+  {
+    id: 'sports_action',
+    emoji: '🏃',
+    badge: '🥋 ⛷️',
+    titleKey: 'chapterSportsActionTitle',
+    descKey: 'chapterSportsActionDesc',
+    colors: { main: '#00B4D8', pale: '#E3F8FC', border: '#0077B6' },
+  },
+];
+
 export type CategoryChapter = {
   number: number;
   theme?: ChapterTheme;
@@ -144,7 +163,7 @@ export type CategoryChapter = {
   unlocked: boolean;
 };
 
-const ACTIVITY_SEQUENCE: readonly LearningActivity[] = ['picture', 'listen'];
+const ACTIVITY_SEQUENCE: readonly LearningActivity[] = ['picture', 'spell', 'listen', 'spell'];
 
 export function learningActivityForPosition(position: number): LearningActivity {
   return ACTIVITY_SEQUENCE[Math.max(0, position) % ACTIVITY_SEQUENCE.length];
@@ -173,6 +192,7 @@ export function buildCategoryChapters(
   const isAnimals = category === 'animals';
   const isFlags = category === 'flags';
   const isFruits = category === 'fruits';
+  const isSports = category === 'sports';
   const chapters: CategoryChapter[] = [];
 
   for (let start = 0; start < entries.length; start += WORDS_PER_CHAPTER) {
@@ -188,7 +208,9 @@ export function buildCategoryChapters(
         ? FLAG_CHAPTER_THEMES[chapterIndex]
         : isFruits && chapterIndex < FRUIT_CHAPTER_THEMES.length
           ? FRUIT_CHAPTER_THEMES[chapterIndex]
-          : undefined;
+          : isSports && chapterIndex < SPORTS_CHAPTER_THEMES.length
+            ? SPORTS_CHAPTER_THEMES[chapterIndex]
+            : undefined;
 
     chapters.push({
       number: chapterIndex + 1,

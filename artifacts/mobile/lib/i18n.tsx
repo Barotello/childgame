@@ -5,11 +5,8 @@ import { LOCALES, translations, type Locale, type TranslationKey } from '@/const
 const STORAGE_KEY = 'kelime-bulmaca:locale:v1';
 const DEFAULT_LOCALE: Locale = 'en';
 
-// Only expose languages whose complete vocabulary has passed an editorial
-// review. Other UI translations remain in the bundle for future rollout.
-const AVAILABLE_LOCALES: Locale[] = LOCALES.filter(
-  (locale) => locale === 'en' || locale === 'tr',
-);
+// All 6 locales have complete vocabularies and UI translations
+const AVAILABLE_LOCALES: Locale[] = [...LOCALES];
 
 function interpolate(text: string, vars?: Record<string, string | number>) {
   if (!vars) return text;

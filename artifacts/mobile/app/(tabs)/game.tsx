@@ -3,10 +3,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PictureChoiceRound from '@/components/PictureChoiceRound';
+import WordRound from '@/components/WordRound';
 import Celebration from '@/components/Celebration';
 import GameHeader from '@/components/GameHeader';
 import InstructionVideoOverlay from '@/components/InstructionVideoOverlay';
@@ -18,6 +19,7 @@ import { useGameState } from '@/lib/gameState';
 import { useI18n } from '@/lib/i18n';
 import { gameTheme } from '@/constants/gameTheme';
 import { learningActivityForPosition, WORDS_PER_CHAPTER } from '@/constants/curriculum';
+import { type CategoryId } from '@/constants/library';
 
 const COINS_PER_LEVEL = 15;
 const INSTRUCTION_VIDEO_KEY = 'kelime-bulmaca:instruction-video-seen:v1';
@@ -29,12 +31,14 @@ const CATEGORY_STEP_ICONS: Record<string, { upcoming: string; current: string; c
   colors: { completed: '⭐', current: '🌟', upcoming: '🎨' },
   flags: { completed: '⭐', current: '🌟', upcoming: '🚩' },
   body: { completed: '⭐', current: '🌟', upcoming: '❤️' },
+  sports: { completed: '⭐', current: '🌟', upcoming: '⚽' },
 };
 
 export default function PlayScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
+  const params = useLocalSearchParams<{ wordId?: string; category?: CategoryId }>();
   const {
     currentLevel,
     totalLevels,
@@ -42,8 +46,20 @@ export default function PlayScreen() {
     completedLevels,
     completeLevel,
     setCurrentLevel,
+    setSelectedCategory,
     coins,
   } = useGameState();
+
+  useEffect(() => {
+    if (params.category && params.category !== selectedCategory) {
+      setSelectedCategory(params.category);
+      const firstIndex = words.findIndex((w) => w.category === params.category);
+      if (firstIndex >= 0) setCurrentLevel(firstIndex);
+    } else if (params.wordId) {
+      const targetIndex = words.findIndex((w) => w.id === params.wordId);
+      if (targetIndex >= 0) setCurrentLevel(targetIndex);
+    }
+  }, [params.category, params.wordId]);
 
   const { locale } = useI18n();
   const currentWord = words[currentLevel];
@@ -247,12 +263,20 @@ export default function PlayScreen() {
           onBackToChapters={() => router.navigate('/category')}
         />
       ) : hasCategoryWords && currentWord?.category === selectedCategory ? (
-        <PictureChoiceRound
-          key={roundKey}
-          word={currentWord}
-          mode={activity}
-          onComplete={handleComplete}
-        />
+        activity === 'spell' ? (
+          <WordRound
+            key={roundKey}
+            word={currentWord}
+            onComplete={handleComplete}
+          />
+        ) : (
+          <PictureChoiceRound
+            key={roundKey}
+            word={currentWord}
+            mode={activity}
+            onComplete={handleComplete}
+          />
+        )
       ) : (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="book-open" size={40} color={colors.secondary} />
@@ -264,7 +288,8 @@ export default function PlayScreen() {
                 | 'categoryNumbers'
                 | 'categoryColors'
                 | 'categoryFlags'
-                | 'categoryBody',
+                | 'categoryBody'
+                | 'categorySports',
             )}
           </Text>
           <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>{t('emptyCategoryBody')}</Text>
